@@ -10,3 +10,7 @@ Summary: In this post, we will focus on interpretability to assess what the ACL 
 <iframe width="100%" height="400" src="https://www.youtube.com/embed/4eyUReyIPXg" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 {% notebook deep_learning_knee_mri_3_of_3.ipynb cells[8:] language[python] %}
+
+Here's a quick video demo of the dash application: <br><br>
+
+<iframe width="100%" height="400" src="https://www.youtube.com/embed/SbNGj51kW28" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
