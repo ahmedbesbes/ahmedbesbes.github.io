@@ -729,4 +729,6 @@ the trunk for elephants), ConvNets virtually do the same by attending to some re
 &lt;/div&gt;
  
 
-&lt;p&gt;&lt;/p&gt;</content><category term="MRI"></category><category term="Medical Imaging"></category><category term="MRNet"></category><category term="CNN"></category><category term="PyTorch"></category><category term="interpretability"></category><category term="Class Activation Map"></category><category term="CAM"></category></entry></feed>
+&lt;p&gt;&lt;/p&gt;
+&lt;p&gt;Here's a quick video demo of the dash application: &lt;/p&gt;
+&lt;iframe allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen="" frameborder="0" height="400" src="https://www.youtube.com/embed/SbNGj51kW28" width="100%"&gt;&lt;/iframe&gt;</content><category term="MRI"></category><category term="Medical Imaging"></category><category term="MRNet"></category><category term="CNN"></category><category term="PyTorch"></category><category term="interpretability"></category><category term="Class Activation Map"></category><category term="CAM"></category></entry></feed>
