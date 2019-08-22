@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Ahmed BESBES - Data Science Portfolio - Random, Data Science</title><link href="https://ahmedbesbes.com/" rel="alternate"></link><link href="https://ahmedbesbes.com/feeds/random-data-science.atom.xml" rel="self"></link><id>https://ahmedbesbes.com/</id><updated>2016-03-05T10:20:00+01:00</updated><subtitle>Data scientist in the making</subtitle><entry><title>Welcome !</title><link href="https://ahmedbesbes.com/welcome.html" rel="alternate"></link><published>2016-03-05T10:20:00+01:00</published><updated>2016-03-05T10:20:00+01:00</updated><author><name>Ahmed Besbes</name></author><id>tag:ahmedbesbes.com,2016-03-05:/welcome.html</id><summary type="html">&lt;/head&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;
+&lt;p style="text-align: center;font-size: 1.2em;"&gt;
+  &lt;img src="../images/hello.jpg"/&gt;
+&lt;/p&gt;
+
+&lt;p&gt;&lt;br/&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Welcome to my blog!&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;br/&gt;&lt;/p&gt;
+&lt;p&gt;My name is Ahmed. I'm a junior data scientist living in France. This blog is a personal project I'm embarking on to present some work I'm developing independently. It'll be about data analytics with a focus on machine learning.&lt;/p&gt;
+&lt;p&gt;In future posts, I'll write about some data science use-cases I'll make, some tools I enjoy using or some reading material I find worth sharing.&lt;/p&gt;
+&lt;p&gt;I do not pretend expertise. I'm writing about things I just learnt. So if you spot any mistake please don't hesitate to point it out.&lt;/p&gt;
+&lt;p&gt;Also if you have any recommendation that could improve this blog, I'm all ears and the comment section is yours.&lt;/p&gt;
+&lt;p&gt;Hope to see you around.&lt;/p&gt;</summary><content type="html">&lt;/head&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;
+&lt;p style="text-align: center;font-size: 1.2em;"&gt;
+  &lt;img src="../images/hello.jpg"/&gt;
+&lt;/p&gt;
+
+&lt;p&gt;&lt;br/&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Welcome to my blog!&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;br/&gt;&lt;/p&gt;
+&lt;p&gt;My name is Ahmed. I'm a junior data scientist living in France. This blog is a personal project I'm embarking on to present some work I'm developing independently. It'll be about data analytics with a focus on machine learning.&lt;/p&gt;
+&lt;p&gt;In future posts, I'll write about some data science use-cases I'll make, some tools I enjoy using or some reading material I find worth sharing.&lt;/p&gt;
+&lt;p&gt;I do not pretend expertise. I'm writing about things I just learnt. So if you spot any mistake please don't hesitate to point it out.&lt;/p&gt;
+&lt;p&gt;Also if you have any recommendation that could improve this blog, I'm all ears and the comment section is yours.&lt;/p&gt;
+&lt;p&gt;Hope to see you around.&lt;/p&gt;</content><category term="Machine Learning"></category><category term="Data Science"></category><category term="NLP"></category><category term="Dataviz"></category><category term="Analytics"></category></entry></feed>
