@@ -28,7 +28,7 @@
 
 <meta name="author" content="Ahmed Besbes" />
 <meta name="description" content="If you are interested in learning an impactful medical application of artificial intelligence, this series of articles is the one you should looking at. My goal is to show you how you can use deep learning and computer vision to assist radiologists in automatically diagnosing severe knee injuries from MRI scans. To do this, we'll first explore the MRNet dataset in this first post. We'll then build a deep learning classification model in PyTorch in the next post and develop an interpretation pipeline in the last one. By the end, you'll have an overview of a medical imaging application with different components that you can use elsewhere in similar situations.Let's start. My @Stanford lab just released the MRNet dataset of 1000+ annotated knee MRIs. Join our competition to develop and test your knee MRI interpreting deep learning model: https://t.co/1OwfEQuTsY @nbien2 @pranavrajpurkar @RobynLBall @jeremy_irvin16 @curtlanglotz @mattlungrenMD— Andrew Ng (@AndrewYNg) 12 avril 2019" />
-<meta name="keywords" content="MRI, MLedical Imaging, MRNet, CNN, PyTorch, image classification"> <meta property="og:site_name" content="Ahmed BESBES - Data Science Portfolio"/>
+<meta name="keywords" content="MRI, Computer Vision, MRNet, Convolutional Neural Networks, PyTorch, image classification, Jupyter Widgets"> <meta property="og:site_name" content="Ahmed BESBES - Data Science Portfolio"/>
 <meta property="og:title" content="Automate the diagnosis of Knee Injuries with Deep Learning part 1: an overview of the MRNet Dataset"/>
 <meta property="og:description" content="If you are interested in learning an impactful medical application of artificial intelligence, this series of articles is the one you should looking at. My goal is to show you how you can use deep learning and computer vision to assist radiologists in automatically diagnosing severe knee injuries from MRI scans. To do this, we'll first explore the MRNet dataset in this first post. We'll then build a deep learning classification model in PyTorch in the next post and develop an interpretation pipeline in the last one. By the end, you'll have an overview of a medical imaging application with different components that you can use elsewhere in similar situations.Let's start. My @Stanford lab just released the MRNet dataset of 1000+ annotated knee MRIs. Join our competition to develop and test your knee MRI interpreting deep learning model: https://t.co/1OwfEQuTsY @nbien2 @pranavrajpurkar @RobynLBall @jeremy_irvin16 @curtlanglotz @mattlungrenMD— Andrew Ng (@AndrewYNg) 12 avril 2019"/>
 <meta property="og:locale" content="en_US"/>
@@ -37,13 +37,14 @@
 <meta property="article:published_time" content="2019-06-25 12:00:00+02:00"/>
 <meta property="article:modified_time" content=""/>
 <meta property="article:author" content="https://ahmedbesbes.com/author/ahmed-besbes.html">
-<meta property="article:section" content="Computer vision, Deep Learning"/>
+<meta property="article:section" content="Medical Imaging"/>
 <meta property="article:tag" content="MRI"/>
-<meta property="article:tag" content="MLedical Imaging"/>
+<meta property="article:tag" content="Computer Vision"/>
 <meta property="article:tag" content="MRNet"/>
-<meta property="article:tag" content="CNN"/>
+<meta property="article:tag" content="Convolutional Neural Networks"/>
 <meta property="article:tag" content="PyTorch"/>
 <meta property="article:tag" content="image classification"/>
+<meta property="article:tag" content="Jupyter Widgets"/>
 <meta property="og:image" content=""> 
   <title>Ahmed BESBES - Data Science Portfolio &ndash; Automate the diagnosis of Knee Injuries with Deep Learning part 1: an overview of the MRNet Dataset</title>
   <script src="https://use.fontawesome.com/53b802812f.js"></script>
@@ -11886,7 +11887,7 @@ jQuery(document).ready(function($) {
 <article>
   <header>
     <h1 id="automate-the-diagnosis-of-knee-injuries-with-deep-learning-part-1-an-overview-of-the-mrnet-dataset">Automate the diagnosis of Knee Injuries with Deep Learning part 1: an overview of the MRNet Dataset</h1>
-    <p>Posted on Mar 25 juin 2019 in <a href="https://ahmedbesbes.com/category/computer-vision-deep-learning.html">Computer vision, Deep Learning</a></p>
+    <p>Posted on Mar 25 juin 2019 in <a href="https://ahmedbesbes.com/category/medical-imaging.html">Medical Imaging</a></p>
   </header>
   <br>
   <div>
@@ -12477,7 +12478,7 @@ cases = load_cases(n=<span class="hljs-number" style="color: rgb(255, 197, 143);
   </div>
   <div class="tag-cloud">
     <p>
-       <a href="https://ahmedbesbes.com/tag/mri.html">MRI</a>       <a href="https://ahmedbesbes.com/tag/mledical-imaging.html">MLedical Imaging</a>       <a href="https://ahmedbesbes.com/tag/mrnet.html">MRNet</a>       <a href="https://ahmedbesbes.com/tag/cnn.html">CNN</a>       <a href="https://ahmedbesbes.com/tag/pytorch.html">PyTorch</a>       <a href="https://ahmedbesbes.com/tag/image-classification.html">image classification</a>      </p>
+       <a href="https://ahmedbesbes.com/tag/mri.html">MRI</a>       <a href="https://ahmedbesbes.com/tag/computer-vision.html">Computer Vision</a>       <a href="https://ahmedbesbes.com/tag/mrnet.html">MRNet</a>       <a href="https://ahmedbesbes.com/tag/convolutional-neural-networks.html">Convolutional Neural Networks</a>       <a href="https://ahmedbesbes.com/tag/pytorch.html">PyTorch</a>       <a href="https://ahmedbesbes.com/tag/image-classification.html">image classification</a>       <a href="https://ahmedbesbes.com/tag/jupyter-widgets.html">Jupyter Widgets</a>      </p>
   </div>
   <div class="center social-share">
     <p>Like this article? Share it with your friends!</p>
@@ -12487,8 +12488,6 @@ cases = load_cases(n=<span class="hljs-number" style="color: rgb(255, 197, 143);
   <div class="related-posts">
     <h4>Related posts:</h4>
     <ul>
-      <li><a href="https://ahmedbesbes.com/automate-the-diagnosis-of-knee-injuries-with-deep-learning-part-3-interpret-models-predictions.html">Automate the diagnosis of Knee Injuries with Deep Learning part 3: Interpret models' predictions</a></li>
-      <li><a href="https://ahmedbesbes.com/overview-and-benchmark-of-traditional-and-deep-learning-models-in-text-classification.html">Overview and benchmark of traditional and deep learning models in text classification</a></li>
       <li><a href="https://ahmedbesbes.com/understanding-deep-convolutional-neural-networks-with-a-practical-use-case-in-tensorflow-and-keras.html">Understanding deep Convolutional Neural Networks with a practical use-case in Tensorflow and Keras</a></li>
     </ul>
   </div>
