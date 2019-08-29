@@ -1,5 +1,5 @@
 p {
-    font-family: 'Roboto', sans-serif !important
+    font-family: 'Roboto', sans-serif !important;
     font-size: 16px !important
 }
 
@@ -34,7 +34,7 @@ div.input_area > div.highlight > pre {
 }
 
 article pre, main article samp {
-    font-family: Source Code Pro, Consolas, monospace
+    font-family: Source Code Pro, Consolas, monospace;
     white-space: pre
 }
 

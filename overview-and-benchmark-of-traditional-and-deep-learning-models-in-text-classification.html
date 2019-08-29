@@ -4,21 +4,20 @@
   <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700,400italic' rel='stylesheet' type='text/css'>
   <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
 
-    <link rel="stylesheet" type="text/css" href="https://ahmedbesbes.com/theme/stylesheet/style.min.css">
+    <link rel="stylesheet" type="text/css" href="./theme/stylesheet/style.min.css">
 
-  <link rel="stylesheet" type="text/css" href="https://ahmedbesbes.com/theme/stylesheet/pygments.min.css">
-  <link rel="stylesheet" type="text/css" href="https://ahmedbesbes.com/theme/stylesheet/font-awesome.min.css">
+  <link rel="stylesheet" type="text/css" href="./theme/stylesheet/pygments.min.css">
+  <link rel="stylesheet" type="text/css" href="./theme/stylesheet/font-awesome.min.css">
 
-  <link rel="stylesheet" type="text/css" href="https://ahmedbesbes.com/theme/font-awesome/fonts/fontawesome-webfont.eot">
-  <link rel="stylesheet" type="text/css" href="https://ahmedbesbes.com/theme/font-awesome/fonts/fontawesome-webfont.svg">
-  <link rel="stylesheet" type="text/css" href="https://ahmedbesbes.com/theme/font-awesome/fonts/fontawesome-webfont.ttf">
-  <link rel="stylesheet" type="text/css" href="https://ahmedbesbes.com/theme/font-awesome/fonts/fontawesome-webfont.woff">
-  <link rel="stylesheet" type="text/css" href="https://ahmedbesbes.com/theme/font-awesome/fonts/fontawesome-webfont.woff2">
-  <link rel="stylesheet" type="text/css" href="https://ahmedbesbes.com/theme/font-awesome/fonts/FontAwesome.otf">
+  <link rel="stylesheet" type="text/css" href="./theme/font-awesome/fonts/fontawesome-webfont.eot">
+  <link rel="stylesheet" type="text/css" href="./theme/font-awesome/fonts/fontawesome-webfont.svg">
+  <link rel="stylesheet" type="text/css" href="./theme/font-awesome/fonts/fontawesome-webfont.ttf">
+  <link rel="stylesheet" type="text/css" href="./theme/font-awesome/fonts/fontawesome-webfont.woff">
+  <link rel="stylesheet" type="text/css" href="./theme/font-awesome/fonts/fontawesome-webfont.woff2">
+  <link rel="stylesheet" type="text/css" href="./theme/font-awesome/fonts/FontAwesome.otf">
 
-    <link href="https://ahmedbesbes.com/static/custom.css" rel="stylesheet">
+    <link href="./static/custom.css" rel="stylesheet">
 
-    <link href="https://ahmedbesbes.com/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Ahmed BESBES - Data Science Portfolio Atom">
 
 
 
@@ -32,11 +31,11 @@
 <meta property="og:title" content="Overview and benchmark of traditional and deep learning models in text classification"/>
 <meta property="og:description" content="This article is an extension of a previous one I wrote when I was experimenting sentiment analysis on twitter data. Back in the time, I explored a simple model: a two-layer feed-forward neural network trained on keras. The input tweets were represented as document vectors resulting from a weighted average of the embeddings of the words composing the tweet. The embedding I used was a word2vec model I trained from scratch on the corpus using gensim. The task was a binary classification and I was able with this setting to achieve 79% accuracy. The goal of this post is to explore other NLP models trained on the same dataset and then benchmark their respective performance on a given test set. We'll go through different models: from simple ones relying on a bag-of-word representation to a heavy machinery deploying convolutional/recurrent networks: We'll see if we'll score more than 79% accuracy! Let's investigate !"/>
 <meta property="og:locale" content="en_US"/>
-<meta property="og:url" content="https://ahmedbesbes.com/overview-and-benchmark-of-traditional-and-deep-learning-models-in-text-classification.html"/>
+<meta property="og:url" content="./overview-and-benchmark-of-traditional-and-deep-learning-models-in-text-classification.html"/>
 <meta property="og:type" content="article"/>
 <meta property="article:published_time" content="2018-06-12 10:00:00+02:00"/>
 <meta property="article:modified_time" content=""/>
-<meta property="article:author" content="https://ahmedbesbes.com/author/ahmed-besbes.html">
+<meta property="article:author" content="./author/ahmed-besbes.html">
 <meta property="article:section" content="Sentiment Analysis"/>
 <meta property="article:tag" content="NLP"/>
 <meta property="article:tag" content="CNN"/>
@@ -11861,10 +11860,10 @@ jQuery(document).ready(function($) {
 <body>
   <aside>
     <div>
-      <a href="https://ahmedbesbes.com">
-        <img src="https://ahmedbesbes.com/theme/img/profile.jpg" alt="Ahmed BESBES" title="Ahmed BESBES">
+      <a href=".">
+        <img src="./theme/img/profile.jpg" alt="Ahmed BESBES" title="Ahmed BESBES">
       </a>
-      <h1><a href="https://ahmedbesbes.com" style="text-decoration: none;">Ahmed BESBES</a></h1>
+      <h1><a href="." style="text-decoration: none;">Ahmed BESBES</a></h1>
       <p>Data scientist in the making</p>
       <!-- <nav>
         <ul class="list">
@@ -11883,17 +11882,16 @@ jQuery(document).ready(function($) {
   </aside>
   <main>
     <nav>
-      <a href="https://ahmedbesbes.com">Home</a>
+      <a href=".">Home</a>
       <a href="/archives.html">Archives</a>
       <a href="/categories.html">Categories</a>
       <a href="/tags.html">Tags</a>
-      <a href="https://ahmedbesbes.com/feeds/all.atom.xml">Atom</a>
     </nav>
 
 <article>
   <header>
     <h1 id="overview-and-benchmark-of-traditional-and-deep-learning-models-in-text-classification">Overview and benchmark of traditional and deep learning models in text classification</h1>
-    <p>Posted on Mar 12 juin 2018 in <a href="https://ahmedbesbes.com/category/sentiment-analysis.html">Sentiment Analysis</a></p>
+    <p>Posted on Mar 12 juin 2018 in <a href="./category/sentiment-analysis.html">Sentiment Analysis</a></p>
   </header>
   <br>
   <div>
@@ -11915,7 +11913,7 @@ jQuery(document).ready(function($) {
 <p></p>
 <!-- <img src="https://ahmedbesbes.com/images/article_5/cover_resized.png" class="center"></img> -->
 
-<p><img alt="energy" src="https://ahmedbesbes.com/images/article_5/cover_resized.png"/></p>
+<p><img alt="energy" src="./images/article_5/cover_resized.png"/></p>
 <p>
 </p><div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div>
@@ -13901,7 +13899,7 @@ Hopefully Keras allows to <strong>pad</strong> sequences with <strong>0s</strong
   </div>
   <div class="tag-cloud">
     <p>
-       <a href="https://ahmedbesbes.com/tag/nlp.html">NLP</a>       <a href="https://ahmedbesbes.com/tag/cnn.html">CNN</a>       <a href="https://ahmedbesbes.com/tag/rnn.html">RNN</a>       <a href="https://ahmedbesbes.com/tag/gru.html">GRU</a>       <a href="https://ahmedbesbes.com/tag/transfer-learning.html">transfer learning</a>       <a href="https://ahmedbesbes.com/tag/deep-learning.html">deep learning</a>       <a href="https://ahmedbesbes.com/tag/keras.html">keras</a>       <a href="https://ahmedbesbes.com/tag/neural-networks.html">neural networks</a>       <a href="https://ahmedbesbes.com/tag/twitter.html">Twitter</a>       <a href="https://ahmedbesbes.com/tag/glove.html">GloVe</a>       <a href="https://ahmedbesbes.com/tag/bag-of-words.html">Bag of words</a>       <a href="https://ahmedbesbes.com/tag/word-ngrams.html">word ngrams</a>       <a href="https://ahmedbesbes.com/tag/character-ngrams.html">character ngrams</a>      </p>
+       <a href="./tag/nlp.html">NLP</a>       <a href="./tag/cnn.html">CNN</a>       <a href="./tag/rnn.html">RNN</a>       <a href="./tag/gru.html">GRU</a>       <a href="./tag/transfer-learning.html">transfer learning</a>       <a href="./tag/deep-learning.html">deep learning</a>       <a href="./tag/keras.html">keras</a>       <a href="./tag/neural-networks.html">neural networks</a>       <a href="./tag/twitter.html">Twitter</a>       <a href="./tag/glove.html">GloVe</a>       <a href="./tag/bag-of-words.html">Bag of words</a>       <a href="./tag/word-ngrams.html">word ngrams</a>       <a href="./tag/character-ngrams.html">character ngrams</a>      </p>
   </div>
   <div class="center social-share">
     <p>Like this article? Share it with your friends!</p>
@@ -13911,8 +13909,8 @@ Hopefully Keras allows to <strong>pad</strong> sequences with <strong>0s</strong
   <div class="related-posts">
     <h4>Related posts:</h4>
     <ul>
-      <li><a href="https://ahmedbesbes.com/understanding-deep-convolutional-neural-networks-with-a-practical-use-case-in-tensorflow-and-keras.html">Understanding deep Convolutional Neural Networks with a practical use-case in Tensorflow and Keras</a></li>
-      <li><a href="https://ahmedbesbes.com/how-to-mine-newsfeed-data-and-extract-interactive-insights-in-python.html">How to mine newsfeed data and extract interactive insights in Python</a></li>
+      <li><a href="./understanding-deep-convolutional-neural-networks-with-a-practical-use-case-in-tensorflow-and-keras.html">Understanding deep Convolutional Neural Networks with a practical use-case in Tensorflow and Keras</a></li>
+      <li><a href="./how-to-mine-newsfeed-data-and-extract-interactive-insights-in-python.html">How to mine newsfeed data and extract interactive insights in Python</a></li>
     </ul>
   </div>
 <div id="disqus_thread"></div>
@@ -13929,7 +13927,7 @@ Hopefully Keras allows to <strong>pad</strong> sequences with <strong>0s</strong
 
     <footer>
 <p>
-  &copy; Ahmed Besbes 2016 - This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/1.0/">Creative Commons Attribution-ShareAlike 1.0 International License</a>
+  &copy; Ahmed Besbes 2019 - This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/1.0/">Creative Commons Attribution-ShareAlike 1.0 International License</a>
 </p>
 <p>Built using <a href="http://getpelican.com" target="_blank">Pelican</a> - <a href="https://github.com/alexandrevicenzi/flex" target="_blank">Flex</a> theme by <a href="http://alexandrevicenzi.com" target="_blank">Alexandre Vicenzi</a></p><p>
   <a rel="license"
@@ -13971,10 +13969,10 @@ Hopefully Keras allows to <strong>pad</strong> sequences with <strong>0s</strong
   "author": {
     "@type": "Person",
     "name": "Ahmed Besbes",
-    "url": "https://ahmedbesbes.com/author/ahmed-besbes.html"
+    "url": "./author/ahmed-besbes.html"
   },
   "image": "{{ SITEURL }}/{{ THEME_STATIC_DIR }}/img/profile.png",
-  "url": "https://ahmedbesbes.com/overview-and-benchmark-of-traditional-and-deep-learning-models-in-text-classification.html",
+  "url": "./overview-and-benchmark-of-traditional-and-deep-learning-models-in-text-classification.html",
   "description": "This article is an extension of a previous one I wrote when I was experimenting sentiment analysis on twitter data. Back in the time, I explored a simple model: a two-layer feed-forward neural network trained on keras. The input tweets were represented as document vectors resulting from a weighted average of the embeddings of the words composing the tweet. The embedding I used was a word2vec model I trained from scratch on the corpus using gensim. The task was a binary classification and I was able with this setting to achieve 79% accuracy. The goal of this post is to explore other NLP models trained on the same dataset and then benchmark their respective performance on a given test set. We'll go through different models: from simple ones relying on a bag-of-word representation to a heavy machinery deploying convolutional/recurrent networks: We'll see if we'll score more than 79% accuracy! Let's investigate !"
 }
 </script> </body>
