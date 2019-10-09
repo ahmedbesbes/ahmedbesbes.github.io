@@ -11903,9 +11903,10 @@ jQuery(document).ready(function($) {
  
 
 <p></p>
-<iframe allowfullscreen="" frameborder="0" height="485" marginheight="0" marginwidth="0" scrolling="no" src="//www.slideshare.net/slideshow/embed_code/key/9NqV164Uhv4NZH" style="border:1px solid #CCC; border-width:1px; margin-bottom:5px; max-width: 100%;" width="100%"> </iframe>
+<div style="text-align:center">
+    <iframe allowfullscreen="" frameborder="0" height="485" marginheight="0" marginwidth="0" scrolling="no" src="//www.slideshare.net/slideshow/embed_code/key/9NqV164Uhv4NZH" style="border:1px solid #CCC; border-width:1px; margin-bottom:5px; max-width: 100%;" width="700"> </iframe> <div style="margin-bottom:5px"> <strong> <a href="//www.slideshare.net/AxeldeRomblay/mlbox-082-178177773" target="_blank" title="MLBox 0.8.2 ">MLBox 0.8.2 </a> </strong> de <strong><a href="//www.slideshare.net/AxeldeRomblay" target="_blank">Axel de Romblay</a></strong> </div>
+</div>
 
-<p></p><div style="margin-bottom:5px"> <strong> <a href="//www.slideshare.net/AxeldeRomblay/mlbox-082-178177773" target="_blank" title="MLBox 0.8.2 ">MLBox 0.8.2 </a> </strong> de <strong><a href="//www.slideshare.net/AxeldeRomblay" target="_blank">Axel de Romblay</a></strong> </div><p></p>
 <p>
 </p><div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div>
@@ -11962,8 +11963,8 @@ jQuery(document).ready(function($) {
 <p>If you're on OSX like me, you'll have to install <strong>OpenMP</strong> (Open Multi-Processing), an efficient implementation of multithreading, via brew:</p>
 <div class="highlight"><pre><span></span><span class="o">(</span>base<span class="o">)</span> brew install libomp
 </pre></div>
-<p>Now activate automl and install MLBox directly form PyPI:</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>base<span class="o">)</span> <span class="nb">source</span> activate mlbox
+<p>Now activate automl and install MLBox directly from PyPI:</p>
+<div class="highlight"><pre><span></span><span class="o">(</span>base<span class="o">)</span> <span class="nb">source</span> activate automl
 <span class="o">(</span>automl<span class="o">)</span> pip install mlbox
 </pre></div>
 <p><img src="./images/article_10/dependencies.png"/></p>
@@ -12063,8 +12064,8 @@ from mlbox.prediction.predictor import Predictor
 
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>CPU times: user 2.9 s, sys: 1.29 s, total: 4.18 s
-Wall time: 10.3 s
+<pre>CPU times: user 2.42 s, sys: 740 ms, total: 3.16 s
+Wall time: 4.04 s
 </pre>
 </div>
 </div>
@@ -12086,6 +12087,7 @@ Wall time: 10.3 s
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>If you're having a train and a test set like in any Kaggle competition, you can feed these two paths directly to MLBox as well as the target name.</p>
+<p>Otherwise, if fed a train set only, MLBox creates a test set.</p>
 
 </div>
 </div>
@@ -12136,67 +12138,26 @@ Wall time: 10.3 s
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In [3]:</div>
+<div class="prompt input_prompt">In [ ]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class="highlight hl-ipython3"><pre><span></span><span class="n">rd</span> <span class="o">=</span> <span class="n">Reader</span><span class="p">(</span><span class="n">sep</span><span class="o">=</span><span class="s2">","</span><span class="p">)</span>
-
-<span class="n">df</span> <span class="o">=</span> <span class="n">rd</span><span class="o">.</span><span class="n">train_test_split</span><span class="p">(</span><span class="n">paths</span><span class="p">,</span> <span class="n">target_name</span><span class="p">)</span> 
+<span class="n">df</span> <span class="o">=</span> <span class="n">rd</span><span class="o">.</span><span class="n">train_test_split</span><span class="p">(</span><span class="n">paths</span><span class="p">,</span> <span class="n">target_name</span><span class="p">)</span>
 </pre></div>
 
 </div>
 </div>
 </div>
 
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-<div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>reading csv : train.csv ...
-cleaning data ...
-CPU time: 7.071681022644043 seconds
-
-reading csv : test.csv ...
-cleaning data ...
-CPU time: 0.03354978561401367 seconds
-
-&gt; Number of common features : 11
-
-gathering and crunching for train and test datasets ...
-reindexing for train and test datasets ...
-dropping training duplicates ...
-dropping constant variables on training set ...
-
-&gt; Number of categorical features: 5
-&gt; Number of numerical features: 6
-&gt; Number of training samples : 891
-&gt; Number of test samples : 418
-
-&gt; Top sparse features (% missing values on train set):
-Cabin       77.1
-Age         19.9
-Embarked     0.2
-dtype: float64
-
-&gt; Task : classification
-0.0    549
-1.0    342
-Name: Survived, dtype: int64
-
-encoding target ...
-</pre>
 </div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><img src="./images/article_10/reading_files.png"/></p>
 
 </div>
 </div>
-
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div>
@@ -12209,7 +12170,7 @@ encoding target ...
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In [4]:</div>
+<div class="prompt input_prompt">In [ ]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class="highlight hl-ipython3"><pre><span></span><span class="n">df</span><span class="p">[</span><span class="s2">"train"</span><span class="p">]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
@@ -12219,129 +12180,15 @@ encoding target ...
 </div>
 </div>
 
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-<div class="prompt output_prompt">Out[4]:</div>
-
-
-
-<div class="output_html rendered_html output_subarea output_execute_result">
-<div>
-<style scoped="">
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>Age</th>
-      <th>Cabin</th>
-      <th>Embarked</th>
-      <th>Fare</th>
-      <th>Name</th>
-      <th>Parch</th>
-      <th>PassengerId</th>
-      <th>Pclass</th>
-      <th>Sex</th>
-      <th>SibSp</th>
-      <th>Ticket</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>22.0</td>
-      <td>NaN</td>
-      <td>S</td>
-      <td>7.2500</td>
-      <td>Braund, Mr. Owen Harris</td>
-      <td>0.0</td>
-      <td>1.0</td>
-      <td>3.0</td>
-      <td>male</td>
-      <td>1.0</td>
-      <td>A/5 21171</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>38.0</td>
-      <td>C85</td>
-      <td>C</td>
-      <td>71.2833</td>
-      <td>Cumings, Mrs. John Bradley (Florence Briggs Th...</td>
-      <td>0.0</td>
-      <td>2.0</td>
-      <td>1.0</td>
-      <td>female</td>
-      <td>1.0</td>
-      <td>PC 17599</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>26.0</td>
-      <td>NaN</td>
-      <td>S</td>
-      <td>7.9250</td>
-      <td>Heikkinen, Miss. Laina</td>
-      <td>0.0</td>
-      <td>3.0</td>
-      <td>3.0</td>
-      <td>female</td>
-      <td>0.0</td>
-      <td>STON/O2. 3101282</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>35.0</td>
-      <td>C123</td>
-      <td>S</td>
-      <td>53.1000</td>
-      <td>Futrelle, Mrs. Jacques Heath (Lily May Peel)</td>
-      <td>0.0</td>
-      <td>4.0</td>
-      <td>1.0</td>
-      <td>female</td>
-      <td>1.0</td>
-      <td>113803</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>35.0</td>
-      <td>NaN</td>
-      <td>S</td>
-      <td>8.0500</td>
-      <td>Allen, Mr. William Henry</td>
-      <td>0.0</td>
-      <td>5.0</td>
-      <td>3.0</td>
-      <td>male</td>
-      <td>0.0</td>
-      <td>373450</td>
-    </tr>
-  </tbody>
-</table>
 </div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div>
-
-</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><img src="./images/article_10/dataframe.png"/></p>
 
 </div>
 </div>
-
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div>
@@ -12395,7 +12242,7 @@ encoding target ...
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In [5]:</div>
+<div class="prompt input_prompt">In [ ]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class="highlight hl-ipython3"><pre><span></span><span class="n">dft</span> <span class="o">=</span> <span class="n">Drift_thresholder</span><span class="p">()</span>
@@ -12406,41 +12253,15 @@ encoding target ...
 </div>
 </div>
 
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-<div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>computing drifts ...
-CPU time: 0.2802262306213379 seconds
-
-&gt; Top 10 drifts
-
-('PassengerId', 0.9977578475336322)
-('Name', 0.9884762572435108)
-('Ticket', 0.6689163729323582)
-('Cabin', 0.17240596303347422)
-('Embarked', 0.07433353190182412)
-('Sex', 0.03134833148225069)
-('Pclass', 0.02615537570548665)
-('SibSp', 0.02514716046656451)
-('Age', 0.02111933805574351)
-('Parch', 0.020186881798871514)
-
-&gt; Deleted variables : ['Name', 'PassengerId', 'Ticket']
-&gt; Drift coefficients dumped into directory : save
-</pre>
 </div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><img src="./images/article_10/computing_drifts.png"/></p>
 
 </div>
 </div>
-
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div>
@@ -12479,7 +12300,7 @@ CPU time: 0.2802262306213379 seconds
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In [6]:</div>
+<div class="prompt input_prompt">In [ ]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class="highlight hl-ipython3"><pre><span></span><span class="n">opt</span> <span class="o">=</span> <span class="n">Optimiser</span><span class="p">()</span>
@@ -12502,49 +12323,26 @@ CPU time: 0.2802262306213379 seconds
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In [7]:</div>
+<div class="prompt input_prompt">In [ ]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class="highlight hl-ipython3"><pre><span></span><span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">'ignore'</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">DeprecationWarning</span><span class="p">)</span>
-<span class="n">score</span> <span class="o">=</span> <span class="n">opt</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">df</span><span class="p">)</span>  <span class="c1"># evaluation of default configuration</span>
+<span class="n">score</span> <span class="o">=</span> <span class="n">opt</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">df</span><span class="p">)</span>
 </pre></div>
 
 </div>
 </div>
 </div>
 
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-<div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>No parameters set. Default configuration is tested
-
-##################################################### testing hyper-parameters... #####################################################
-
-&gt;&gt;&gt; NA ENCODER :{'numerical_strategy': 'mean', 'categorical_strategy': '&lt;NULL&gt;'}
-
-&gt;&gt;&gt; CA ENCODER :{'strategy': 'label_encoding'}
-
-&gt;&gt;&gt; ESTIMATOR :{'strategy': 'LightGBM', 'boosting_type': 'gbdt', 'class_weight': None, 'colsample_bytree': 0.8, 'importance_type': 'split', 'learning_rate': 0.05, 'max_depth': -1, 'min_child_samples': 20, 'min_child_weight': 0.001, 'min_split_gain': 0.0, 'n_estimators': 500, 'n_jobs': -1, 'num_leaves': 31, 'objective': None, 'random_state': None, 'reg_alpha': 0.0, 'reg_lambda': 0.0, 'silent': True, 'subsample': 0.9, 'subsample_for_bin': 200000, 'subsample_freq': 0, 'nthread': -1, 'seed': 0}
-
-
-MEAN SCORE : neg_log_loss = -0.6324717748298669
-VARIANCE : 0.003224557409561235 (fold 1 = -0.6356963322394281, fold 2 = -0.6292472174203056)
-CPU time: 0.3516390323638916 seconds
-
-</pre>
 </div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><img src="./images/article_10/baseline_optim.png"/></p>
 
 </div>
 </div>
-
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div>
@@ -12565,7 +12363,7 @@ CPU time: 0.3516390323638916 seconds
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In [8]:</div>
+<div class="prompt input_prompt">In [ ]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class="highlight hl-ipython3"><pre><span></span><span class="n">space</span> <span class="o">=</span> <span class="p">{</span>
@@ -12581,162 +12379,35 @@ CPU time: 0.3516390323638916 seconds
                           <span class="s2">"space"</span><span class="p">:[</span><span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">13</span><span class="p">]}</span>
         <span class="p">}</span>
 
-<span class="n">params</span> <span class="o">=</span> <span class="n">opt</span><span class="o">.</span><span class="n">optimise</span><span class="p">(</span><span class="n">space</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="mi">15</span><span class="p">)</span>  <span class="c1"># computation of the optimal parameters configuration</span>
+<span class="n">params</span> <span class="o">=</span> <span class="n">opt</span><span class="o">.</span><span class="n">optimise</span><span class="p">(</span><span class="n">space</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="mi">15</span><span class="p">)</span>
 </pre></div>
 
 </div>
 </div>
 </div>
 
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-<div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>##################################################### testing hyper-parameters... #####################################################
-&gt;&gt;&gt; NA ENCODER :{'numerical_strategy': 'mean', 'categorical_strategy': '&lt;NULL&gt;'}
-&gt;&gt;&gt; CA ENCODER :{'strategy': 'label_encoding'}      
-&gt;&gt;&gt; FEATURE SELECTOR :{'strategy': 'l1', 'threshold': 0.08687679026044265}
-&gt;&gt;&gt; ESTIMATOR :{'strategy': 'ExtraTrees', 'max_depth': 13, 'bootstrap': True, 'class_weight': None, 'criterion': 'gini', 'max_features': 'sqrt', 'max_leaf_nodes': None, 'min_impurity_decrease': 0.0, 'min_impurity_split': None, 'min_samples_leaf': 1, 'min_samples_split': 2, 'min_weight_fraction_leaf': 0.0, 'n_estimators': 400, 'n_jobs': -1, 'oob_score': False, 'random_state': 0, 'verbose': 0, 'warm_start': False}
-MEAN SCORE : neg_log_loss = -0.46568318951415477    
-VARIANCE : 0.026560479820748356 (fold 1 = -0.49224366933490316, fold 2 = -0.43912270969340644)
-CPU time: 1.261826992034912 seconds                 
-##################################################### testing hyper-parameters... #####################################################
-&gt;&gt;&gt; NA ENCODER :{'numerical_strategy': 'mean', 'categorical_strategy': '&lt;NULL&gt;'}
-&gt;&gt;&gt; CA ENCODER :{'strategy': 'label_encoding'}                                
-&gt;&gt;&gt; FEATURE SELECTOR :{'strategy': 'l1', 'threshold': 0.1880309314413372}     
-&gt;&gt;&gt; ESTIMATOR :{'strategy': 'LightGBM', 'max_depth': 13, 'boosting_type': 'gbdt', 'class_weight': None, 'colsample_bytree': 0.8, 'importance_type': 'split', 'learning_rate': 0.05, 'min_child_samples': 20, 'min_child_weight': 0.001, 'min_split_gain': 0.0, 'n_estimators': 500, 'n_jobs': -1, 'num_leaves': 31, 'objective': None, 'random_state': None, 'reg_alpha': 0.0, 'reg_lambda': 0.0, 'silent': True, 'subsample': 0.9, 'subsample_for_bin': 200000, 'subsample_freq': 0, 'nthread': -1, 'seed': 0}
-MEAN SCORE : neg_log_loss = -0.6319877461453932                               
-VARIANCE : 0.00828355918984891 (fold 1 = -0.6402713053352421, fold 2 = -0.6237041869555443)
-CPU time: 0.3333399295806885 seconds                                          
-##################################################### testing hyper-parameters... #####################################################
-&gt;&gt;&gt; NA ENCODER :{'numerical_strategy': 0, 'categorical_strategy': '&lt;NULL&gt;'}   
-&gt;&gt;&gt; CA ENCODER :{'strategy': 'label_encoding'}                                
-&gt;&gt;&gt; FEATURE SELECTOR :{'strategy': 'l1', 'threshold': 0.0990794719864227}     
-&gt;&gt;&gt; ESTIMATOR :{'strategy': 'RandomForest', 'max_depth': 8, 'bootstrap': True, 'class_weight': None, 'criterion': 'gini', 'max_features': 'sqrt', 'max_leaf_nodes': None, 'min_impurity_decrease': 0.0, 'min_impurity_split': None, 'min_samples_leaf': 1, 'min_samples_split': 2, 'min_weight_fraction_leaf': 0.0, 'n_estimators': 400, 'n_jobs': -1, 'oob_score': False, 'random_state': 0, 'verbose': 0, 'warm_start': False}
-MEAN SCORE : neg_log_loss = -0.4454291007965345                               
-VARIANCE : 0.019103462344236627 (fold 1 = -0.4645325631407711, fold 2 = -0.4263256384522979)
-CPU time: 1.1755399703979492 seconds                                          
-##################################################### testing hyper-parameters... #####################################################
-&gt;&gt;&gt; NA ENCODER :{'numerical_strategy': 'mean', 'categorical_strategy': '&lt;NULL&gt;'}
-&gt;&gt;&gt; CA ENCODER :{'strategy': 'entity_embedding'}                             
-&gt;&gt;&gt; FEATURE SELECTOR :{'strategy': 'l1', 'threshold': 0.06957009042046701}   
-&gt;&gt;&gt; ESTIMATOR :{'strategy': 'ExtraTrees', 'max_depth': 8, 'bootstrap': True, 'class_weight': None, 'criterion': 'gini', 'max_features': 'sqrt', 'max_leaf_nodes': None, 'min_impurity_decrease': 0.0, 'min_impurity_split': None, 'min_samples_leaf': 1, 'min_samples_split': 2, 'min_weight_fraction_leaf': 0.0, 'n_estimators': 400, 'n_jobs': -1, 'oob_score': False, 'random_state': 0, 'verbose': 0, 'warm_start': False}
-MEAN SCORE : neg_log_loss = -0.4736455217220734                              
-VARIANCE : 0.02977300361691196 (fold 1 = -0.5034185253389853, fold 2 = -0.44387251810516143)
-CPU time: 1.1559529304504395 seconds                                         
-##################################################### testing hyper-parameters... #####################################################
-&gt;&gt;&gt; NA ENCODER :{'numerical_strategy': 0, 'categorical_strategy': '&lt;NULL&gt;'}  
-&gt;&gt;&gt; CA ENCODER :{'strategy': 'label_encoding'}                               
-&gt;&gt;&gt; FEATURE SELECTOR :{'strategy': 'l1', 'threshold': 0.1136890222014426}    
-&gt;&gt;&gt; ESTIMATOR :{'strategy': 'RandomForest', 'max_depth': 13, 'bootstrap': True, 'class_weight': None, 'criterion': 'gini', 'max_features': 'sqrt', 'max_leaf_nodes': None, 'min_impurity_decrease': 0.0, 'min_impurity_split': None, 'min_samples_leaf': 1, 'min_samples_split': 2, 'min_weight_fraction_leaf': 0.0, 'n_estimators': 400, 'n_jobs': -1, 'oob_score': False, 'random_state': 0, 'verbose': 0, 'warm_start': False}
-MEAN SCORE : neg_log_loss = -0.49441034337999                                
-VARIANCE : 0.03075404911142718 (fold 1 = -0.5251643924914172, fold 2 = -0.46365629426856286)
-CPU time: 1.1168630123138428 seconds                                         
-##################################################### testing hyper-parameters... #####################################################
-&gt;&gt;&gt; NA ENCODER :{'numerical_strategy': 'mean', 'categorical_strategy': '&lt;NULL&gt;'}
-&gt;&gt;&gt; CA ENCODER :{'strategy': 'label_encoding'}                               
-&gt;&gt;&gt; FEATURE SELECTOR :{'strategy': 'l1', 'threshold': 0.14587669858515695}   
-&gt;&gt;&gt; ESTIMATOR :{'strategy': 'ExtraTrees', 'max_depth': 8, 'bootstrap': True, 'class_weight': None, 'criterion': 'gini', 'max_features': 'sqrt', 'max_leaf_nodes': None, 'min_impurity_decrease': 0.0, 'min_impurity_split': None, 'min_samples_leaf': 1, 'min_samples_split': 2, 'min_weight_fraction_leaf': 0.0, 'n_estimators': 400, 'n_jobs': -1, 'oob_score': False, 'random_state': 0, 'verbose': 0, 'warm_start': False}
-MEAN SCORE : neg_log_loss = -0.4360647044652233                              
-VARIANCE : 0.014420298515524094 (fold 1 = -0.4504850029807474, fold 2 = -0.4216444059496992)
-CPU time: 1.1984360218048096 seconds                                         
-##################################################### testing hyper-parameters... #####################################################
-&gt;&gt;&gt; NA ENCODER :{'numerical_strategy': 'mean', 'categorical_strategy': '&lt;NULL&gt;'}
-&gt;&gt;&gt; CA ENCODER :{'strategy': 'label_encoding'}                               
-&gt;&gt;&gt; FEATURE SELECTOR :{'strategy': 'l1', 'threshold': 0.01947150829296879}   
-&gt;&gt;&gt; ESTIMATOR :{'strategy': 'ExtraTrees', 'max_depth': 11, 'bootstrap': True, 'class_weight': None, 'criterion': 'gini', 'max_features': 'sqrt', 'max_leaf_nodes': None, 'min_impurity_decrease': 0.0, 'min_impurity_split': None, 'min_samples_leaf': 1, 'min_samples_split': 2, 'min_weight_fraction_leaf': 0.0, 'n_estimators': 400, 'n_jobs': -1, 'oob_score': False, 'random_state': 0, 'verbose': 0, 'warm_start': False}
-MEAN SCORE : neg_log_loss = -0.4473474648918937                              
-VARIANCE : 0.020381112005992352 (fold 1 = -0.46772857689788605, fold 2 = -0.42696635288590135)
-CPU time: 1.133007287979126 seconds                                          
-##################################################### testing hyper-parameters... #####################################################
-&gt;&gt;&gt; NA ENCODER :{'numerical_strategy': 0, 'categorical_strategy': '&lt;NULL&gt;'}  
-&gt;&gt;&gt; CA ENCODER :{'strategy': 'random_projection'}                            
-&gt;&gt;&gt; FEATURE SELECTOR :{'strategy': 'l1', 'threshold': 0.17253154079302718}   
-&gt;&gt;&gt; ESTIMATOR :{'strategy': 'LightGBM', 'max_depth': 13, 'boosting_type': 'gbdt', 'class_weight': None, 'colsample_bytree': 0.8, 'importance_type': 'split', 'learning_rate': 0.05, 'min_child_samples': 20, 'min_child_weight': 0.001, 'min_split_gain': 0.0, 'n_estimators': 500, 'n_jobs': -1, 'num_leaves': 31, 'objective': None, 'random_state': None, 'reg_alpha': 0.0, 'reg_lambda': 0.0, 'silent': True, 'subsample': 0.9, 'subsample_for_bin': 200000, 'subsample_freq': 0, 'nthread': -1, 'seed': 0}
-MEAN SCORE : neg_log_loss = -0.6613447322655455                              
-VARIANCE : 0.0076144189526844985 (fold 1 = -0.6537303133128609, fold 2 = -0.6689591512182299)
-CPU time: 0.3399369716644287 seconds                                         
-##################################################### testing hyper-parameters... #####################################################
-&gt;&gt;&gt; NA ENCODER :{'numerical_strategy': 0, 'categorical_strategy': '&lt;NULL&gt;'}  
-&gt;&gt;&gt; CA ENCODER :{'strategy': 'entity_embedding'}                             
-&gt;&gt;&gt; FEATURE SELECTOR :{'strategy': 'l1', 'threshold': 0.06486503755165093}   
-&gt;&gt;&gt; ESTIMATOR :{'strategy': 'LightGBM', 'max_depth': 13, 'boosting_type': 'gbdt', 'class_weight': None, 'colsample_bytree': 0.8, 'importance_type': 'split', 'learning_rate': 0.05, 'min_child_samples': 20, 'min_child_weight': 0.001, 'min_split_gain': 0.0, 'n_estimators': 500, 'n_jobs': -1, 'num_leaves': 31, 'objective': None, 'random_state': None, 'reg_alpha': 0.0, 'reg_lambda': 0.0, 'silent': True, 'subsample': 0.9, 'subsample_for_bin': 200000, 'subsample_freq': 0, 'nthread': -1, 'seed': 0}
-MEAN SCORE : neg_log_loss = -1.0153248545196272                              
-VARIANCE : 0.23084687444268726 (fold 1 = -1.2461717289623144, fold 2 = -0.7844779800769399)
-CPU time: 0.5311071872711182 seconds                                         
-##################################################### testing hyper-parameters... #####################################################
-&gt;&gt;&gt; NA ENCODER :{'numerical_strategy': 0, 'categorical_strategy': '&lt;NULL&gt;'}  
-&gt;&gt;&gt; CA ENCODER :{'strategy': 'entity_embedding'}                             
-&gt;&gt;&gt; FEATURE SELECTOR :{'strategy': 'l1', 'threshold': 0.18047475027201043}   
-&gt;&gt;&gt; ESTIMATOR :{'strategy': 'LightGBM', 'max_depth': 10, 'boosting_type': 'gbdt', 'class_weight': None, 'colsample_bytree': 0.8, 'importance_type': 'split', 'learning_rate': 0.05, 'min_child_samples': 20, 'min_child_weight': 0.001, 'min_split_gain': 0.0, 'n_estimators': 500, 'n_jobs': -1, 'num_leaves': 31, 'objective': None, 'random_state': None, 'reg_alpha': 0.0, 'reg_lambda': 0.0, 'silent': True, 'subsample': 0.9, 'subsample_for_bin': 200000, 'subsample_freq': 0, 'nthread': -1, 'seed': 0}
-MEAN SCORE : neg_log_loss = -1.019618258856772                               
-VARIANCE : 0.2219659123625779 (fold 1 = -1.2415841712193498, fold 2 = -0.797652346494194)
-CPU time: 0.5522429943084717 seconds                                         
-##################################################### testing hyper-parameters... #####################################################
-&gt;&gt;&gt; NA ENCODER :{'numerical_strategy': 'mean', 'categorical_strategy': '&lt;NULL&gt;'}
-&gt;&gt;&gt; CA ENCODER :{'strategy': 'label_encoding'}                                
-&gt;&gt;&gt; FEATURE SELECTOR :{'strategy': 'l1', 'threshold': 0.11173101739685073}    
-&gt;&gt;&gt; ESTIMATOR :{'strategy': 'LightGBM', 'max_depth': 8, 'boosting_type': 'gbdt', 'class_weight': None, 'colsample_bytree': 0.8, 'importance_type': 'split', 'learning_rate': 0.05, 'min_child_samples': 20, 'min_child_weight': 0.001, 'min_split_gain': 0.0, 'n_estimators': 500, 'n_jobs': -1, 'num_leaves': 31, 'objective': None, 'random_state': None, 'reg_alpha': 0.0, 'reg_lambda': 0.0, 'silent': True, 'subsample': 0.9, 'subsample_for_bin': 200000, 'subsample_freq': 0, 'nthread': -1, 'seed': 0}
-MEAN SCORE : neg_log_loss = -0.6131877515974304                               
-VARIANCE : 0.0037047599486706995 (fold 1 = -0.6168925115461011, fold 2 = -0.6094829916487597)
-CPU time: 0.3417699337005615 seconds                                          
-##################################################### testing hyper-parameters... #####################################################
-&gt;&gt;&gt; NA ENCODER :{'numerical_strategy': 0, 'categorical_strategy': '&lt;NULL&gt;'}   
-&gt;&gt;&gt; CA ENCODER :{'strategy': 'entity_embedding'}                              
-&gt;&gt;&gt; FEATURE SELECTOR :{'strategy': 'l1', 'threshold': 0.049226083069767175}   
-&gt;&gt;&gt; ESTIMATOR :{'strategy': 'LightGBM', 'max_depth': 9, 'boosting_type': 'gbdt', 'class_weight': None, 'colsample_bytree': 0.8, 'importance_type': 'split', 'learning_rate': 0.05, 'min_child_samples': 20, 'min_child_weight': 0.001, 'min_split_gain': 0.0, 'n_estimators': 500, 'n_jobs': -1, 'num_leaves': 31, 'objective': None, 'random_state': None, 'reg_alpha': 0.0, 'reg_lambda': 0.0, 'silent': True, 'subsample': 0.9, 'subsample_for_bin': 200000, 'subsample_freq': 0, 'nthread': -1, 'seed': 0}
-MEAN SCORE : neg_log_loss = -1.0014180338207277                               
-VARIANCE : 0.22734321093705623 (fold 1 = -1.228761244757784, fold 2 = -0.7740748228836716)
-CPU time: 0.4224519729614258 seconds                                          
-##################################################### testing hyper-parameters... #####################################################
-&gt;&gt;&gt; NA ENCODER :{'numerical_strategy': 0, 'categorical_strategy': '&lt;NULL&gt;'}   
-&gt;&gt;&gt; CA ENCODER :{'strategy': 'label_encoding'}                                
-&gt;&gt;&gt; FEATURE SELECTOR :{'strategy': 'l1', 'threshold': 0.07403572702748741}    
-&gt;&gt;&gt; ESTIMATOR :{'strategy': 'LightGBM', 'max_depth': 13, 'boosting_type': 'gbdt', 'class_weight': None, 'colsample_bytree': 0.8, 'importance_type': 'split', 'learning_rate': 0.05, 'min_child_samples': 20, 'min_child_weight': 0.001, 'min_split_gain': 0.0, 'n_estimators': 500, 'n_jobs': -1, 'num_leaves': 31, 'objective': None, 'random_state': None, 'reg_alpha': 0.0, 'reg_lambda': 0.0, 'silent': True, 'subsample': 0.9, 'subsample_for_bin': 200000, 'subsample_freq': 0, 'nthread': -1, 'seed': 0}
-MEAN SCORE : neg_log_loss = -0.6546289643107069                               
-VARIANCE : 0.023783736990201865 (fold 1 = -0.6784127013009088, fold 2 = -0.6308452273205051)
-CPU time: 0.5296919345855713 seconds                                          
-##################################################### testing hyper-parameters... #####################################################
-&gt;&gt;&gt; NA ENCODER :{'numerical_strategy': 'mean', 'categorical_strategy': '&lt;NULL&gt;'}
-&gt;&gt;&gt; CA ENCODER :{'strategy': 'random_projection'}                             
-&gt;&gt;&gt; FEATURE SELECTOR :{'strategy': 'l1', 'threshold': 0.04051608502201576}    
-&gt;&gt;&gt; ESTIMATOR :{'strategy': 'RandomForest', 'max_depth': 9, 'bootstrap': True, 'class_weight': None, 'criterion': 'gini', 'max_features': 'sqrt', 'max_leaf_nodes': None, 'min_impurity_decrease': 0.0, 'min_impurity_split': None, 'min_samples_leaf': 1, 'min_samples_split': 2, 'min_weight_fraction_leaf': 0.0, 'n_estimators': 400, 'n_jobs': -1, 'oob_score': False, 'random_state': 0, 'verbose': 0, 'warm_start': False}
-MEAN SCORE : neg_log_loss = -0.45189925322026037                              
-VARIANCE : 0.01711748107054034 (fold 1 = -0.4690167342908007, fold 2 = -0.43478177214972)
-CPU time: 1.256556749343872 seconds                                           
-##################################################### testing hyper-parameters... #####################################################
-&gt;&gt;&gt; NA ENCODER :{'numerical_strategy': 'mean', 'categorical_strategy': '&lt;NULL&gt;'}
-&gt;&gt;&gt; CA ENCODER :{'strategy': 'random_projection'}                             
-&gt;&gt;&gt; FEATURE SELECTOR :{'strategy': 'l1', 'threshold': 0.10348301173760452}    
-&gt;&gt;&gt; ESTIMATOR :{'strategy': 'LightGBM', 'max_depth': 13, 'boosting_type': 'gbdt', 'class_weight': None, 'colsample_bytree': 0.8, 'importance_type': 'split', 'learning_rate': 0.05, 'min_child_samples': 20, 'min_child_weight': 0.001, 'min_split_gain': 0.0, 'n_estimators': 500, 'n_jobs': -1, 'num_leaves': 31, 'objective': None, 'random_state': None, 'reg_alpha': 0.0, 'reg_lambda': 0.0, 'silent': True, 'subsample': 0.9, 'subsample_for_bin': 200000, 'subsample_freq': 0, 'nthread': -1, 'seed': 0}
-MEAN SCORE : neg_log_loss = -0.6366110501785736                               
-VARIANCE : 0.004125012820492324 (fold 1 = -0.6324860373580813, fold 2 = -0.6407360629990659)
-CPU time: 0.4205179214477539 seconds                                          
-100%|██████████| 15/15 [00:12&lt;00:00,  1.25it/s, best loss: 0.4360647044652233]
-
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ BEST HYPER-PARAMETERS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-{'ce__strategy': 'label_encoding', 'est__max_depth': 8, 'est__strategy': 'ExtraTrees', 'fs__threshold': 0.14587669858515695, 'ne__numerical_strategy': 'mean'}
-</pre>
 </div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><img src="./images/article_10/optim.png"/></p>
 
 </div>
 </div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Let's now evaluate this model:</p>
 
+</div>
+</div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In [9]:</div>
+<div class="prompt input_prompt">In [ ]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class="highlight hl-ipython3"><pre><span></span><span class="n">opt</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">df</span><span class="p">)</span>
@@ -12746,51 +12417,15 @@ CPU time: 0.4205179214477539 seconds
 </div>
 </div>
 
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-<div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>##################################################### testing hyper-parameters... #####################################################
-
-&gt;&gt;&gt; NA ENCODER :{'numerical_strategy': 'mean', 'categorical_strategy': '&lt;NULL&gt;'}
-
-&gt;&gt;&gt; CA ENCODER :{'strategy': 'label_encoding'}
-
-&gt;&gt;&gt; FEATURE SELECTOR :{'strategy': 'l1', 'threshold': 0.14587669858515695}
-
-&gt;&gt;&gt; ESTIMATOR :{'strategy': 'ExtraTrees', 'max_depth': 8, 'bootstrap': True, 'class_weight': None, 'criterion': 'gini', 'max_features': 'sqrt', 'max_leaf_nodes': None, 'min_impurity_decrease': 0.0, 'min_impurity_split': None, 'min_samples_leaf': 1, 'min_samples_split': 2, 'min_weight_fraction_leaf': 0.0, 'n_estimators': 400, 'n_jobs': -1, 'oob_score': False, 'random_state': 0, 'verbose': 0, 'warm_start': False}
-
-
-MEAN SCORE : neg_log_loss = -0.4360647044652233
-VARIANCE : 0.014420298515524094 (fold 1 = -0.4504850029807474, fold 2 = -0.4216444059496992)
-CPU time: 1.1531641483306885 seconds
-
-</pre>
 </div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div>
-
-<div class="output_area">
-
-<div class="prompt output_prompt">Out[9]:</div>
-
-
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>-0.4360647044652233</pre>
-</div>
-
-</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><img src="images/article_10/evaluation.png"/></p>
 
 </div>
 </div>
-
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div>
@@ -12876,7 +12511,7 @@ CPU time: 1.1531641483306885 seconds
 
     <footer>
 <p>
-  &copy;  2019 - This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/1.0/">Creative Commons Attribution-ShareAlike 1.0 International License</a>
+  &copy; Ahmed Besbes 2019 - This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/1.0/">Creative Commons Attribution-ShareAlike 1.0 International License</a>
 </p>
 <p>Built using <a href="http://getpelican.com" target="_blank">Pelican</a> - <a href="https://github.com/alexandrevicenzi/flex" target="_blank">Flex</a> theme by <a href="http://alexandrevicenzi.com" target="_blank">Alexandre Vicenzi</a></p><p>
   <a rel="license"
