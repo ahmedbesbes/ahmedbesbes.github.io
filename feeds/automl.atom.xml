@@ -587,13 +587,14 @@ Wall time: 4.04 s
 &lt;/div&gt;
 &lt;div class="inner_cell"&gt;
 &lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
-&lt;h1 id="5---Conclusion"&gt;5 - Conclusion&lt;a class="anchor-link" href="#5---Conclusion"&gt;¶&lt;/a&gt;&lt;/h1&gt;&lt;p&gt;Running an automated AutoML pipeline has never been easier. With MLBox, you can do this very quickly and efficiently so that you can focus on what really matters when solving a business problem:&lt;/p&gt;
+&lt;h1 id="5---Conclusion"&gt;5 - Conclusion&lt;a class="anchor-link" href="#5---Conclusion"&gt;¶&lt;/a&gt;&lt;/h1&gt;&lt;p&gt;Running an automated AutoML pipeline has never been easier. With MLBox, you can do this very quickly and efficiently so that you can focus on what really matters when solving a business problem.&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;Understanding the problem&lt;/li&gt;
 &lt;li&gt;Acquiring and consolidating the right data&lt;/li&gt;
 &lt;li&gt;Formalizing the performance metrics to reach and compute&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;Let's hope these three first steps don't get automated soon :)&lt;/p&gt;
+&lt;p&gt;Hope you liked this library. Don't hesitate to star it on &lt;a href="https://github.com/AxeldeRomblay/MLBox"&gt; github&lt;/a&gt; or report an &lt;a href="https://github.com/AxeldeRomblay/MLBox/issues"&gt;issue&lt;/a&gt; to its contributor.&lt;/p&gt;
 
 &lt;/div&gt;
 &lt;/div&gt;
