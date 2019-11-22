@@ -53,6 +53,7 @@ SITEURL = u'http://localhost:8000'
 TIMEZONE = 'Europe/Paris'
 DEFAULT_LANG = u'en'
 
+USE_FOLDER_AS_CATEGORY = True
 FEED_ALL_ATOM = None
 CATEGORY_FEED_ATOM = None
 TRANSLATION_FEED_ATOM = None
@@ -60,6 +61,11 @@ AUTHOR_FEED_ATOM = None
 AUTHOR_FEED_RSS = None
 DEFAULT_PAGINATION = 10
 MAIN_MENU = True
+
+# PAGINATION_PATTERNS = (
+#     (1, '{base_name}/', '{base_name}/index.html'),
+#     (2, '{base_name}/page/{number}/', '{base_name}/page/{number}/index.html'),
+# )
 
 SOCIAL = (
     ('linkedin', 'https://fr.linkedin.com/in/ahmed-besbes-99a91661'),
@@ -116,7 +122,7 @@ CC_LICENSE = {
     'slug': 'by-sa'
 }
 
-COPYRIGHT_YEAR = 2016
+COPYRIGHT_YEAR = 2019
 
 # related posts setup
 

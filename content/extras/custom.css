@@ -1,38 +1,47 @@
 p {
-   font-family: 'Roboto', sans-serif !important;
-   font-size: 16px !important;
+    font-family: 'Roboto', sans-serif !important;
+    font-size: 16px !important
 }
 
 a, .h1, .h2, .h3, .h4, .h5, h1, h2, h3, h4, h5 {
-  font-family: 'Roboto', sans-serif !important;
+    /* font-family: 'Roboto', sans-serif !important */
+    font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif !important
 }
 
 /*pre {
-    white-space: pre !important;
+    white-space: pre !important
 }*/
 
 p {
-  font-size: 1.2em;
+    font-size: 1.2em;
+    margin-bottom: 9px !important;
+
 }
 
-h2 a:hover, h2 a:visited, h2 a:link, h2 a:active, h2 a:focus {
-  text-decoration: none;
+h2 a: hover, h2 a: visited, h2 a: link, h2 a: active, h2 a: focus {
+    text-decoration: none
 }
 
-div.input_area>div.highlight>pre {
-  margin: 0px;
-  border: none;
-  padding: 0px;
-  background-color: transparent;
-  /*overflow-x: scroll;*/
-  white-space: pre;
+div.input_area > div.highlight > pre {
+    margin: 0px
+    border: none
+    padding: 0px
+    background-color: transparent
+    / *overflow-x: scroll
+    * /
+    white-space: pre
 }
 
 .rendered_html blockquote {
-     margin: 0em 0em !important;
+    margin: 0em 0em !important
 }
 
 article pre, main article samp {
     font-family: Source Code Pro, Consolas, monospace;
-    white-space: pre;
+    white-space: pre
+}
+
+
+.tag-cloud a {
+    background-color: #337ab7 !important;
 }
