@@ -1,0 +1,1323 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Ahmed BESBES - Data Science Portfolio - Deployment tutorial</title><link href="https://ahmedbesbes.com/" rel="alternate"></link><link href="https://ahmedbesbes.com/feeds/deployment-tutorial.atom.xml" rel="self"></link><id>https://ahmedbesbes.com/</id><updated>2019-11-22T10:00:00+01:00</updated><subtitle>Data scientist in the making</subtitle><entry><title>End to End Machine Learning: From Data Collection to Deployment 🚀</title><link href="https://ahmedbesbes.com/end-to-end-machine-learning-from-data-collection-to-deployment.html" rel="alternate"></link><published>2019-11-22T10:00:00+01:00</published><updated>2019-11-22T10:00:00+01:00</updated><author><name>Ahmed Besbes</name></author><id>tag:ahmedbesbes.com,2019-11-22:/end-to-end-machine-learning-from-data-collection-to-deployment.html</id><summary type="html">&lt;/head&gt;&lt;body&gt;&lt;p&gt;&lt;em&gt;This started out as a challenge. With a &lt;a href="http://marwandebbiche.com"&gt;friend&lt;/a&gt; of mine, we wanted to see if it was possible to build something from scratch and push it to production. In 3 weeks. This is our story.&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;In this post, we'll go through the necessary steps to build and deploy a machine learning application. This starts from data collection to deployment and the journey, as you'll see it, is exciting and fun 😀.&lt;/p&gt;
+&lt;p&gt;Before we begin, let's have a look at the app we'll be building:&lt;/p&gt;
+&lt;p align="center"&gt;
+    &lt;img src="/images/article_11/app.gif" style="margin:15px"/&gt;
+&lt;/p&gt;
+
+&lt;p&gt;As you see, this web app allows a user to evaluate random brands by writing reviews. While writing, the user will see the sentiment score of his input updating in real-time along with a proposed rating from 1 to 5.&lt;/p&gt;
+&lt;p&gt;The user can then change the rating in case the suggested one does not reflect his views …&lt;/p&gt;&lt;/body&gt;</summary><content type="html">&lt;/head&gt;&lt;body&gt;&lt;p&gt;&lt;em&gt;This started out as a challenge. With a &lt;a href="http://marwandebbiche.com"&gt;friend&lt;/a&gt; of mine, we wanted to see if it was possible to build something from scratch and push it to production. In 3 weeks. This is our story.&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;In this post, we'll go through the necessary steps to build and deploy a machine learning application. This starts from data collection to deployment and the journey, as you'll see it, is exciting and fun 😀.&lt;/p&gt;
+&lt;p&gt;Before we begin, let's have a look at the app we'll be building:&lt;/p&gt;
+&lt;p align="center"&gt;
+    &lt;img src="/images/article_11/app.gif" style="margin:15px"/&gt;
+&lt;/p&gt;
+
+&lt;p&gt;As you see, this web app allows a user to evaluate random brands by writing reviews. While writing, the user will see the sentiment score of his input updating in real-time along with a proposed rating from 1 to 5.&lt;/p&gt;
+&lt;p&gt;The user can then change the rating in case the suggested one does not reflect his views, and submit.&lt;/p&gt;
+&lt;p&gt;You can think of this as a crowd sourcing app of brand reviews with a sentiment analysis model that suggests ratings that the user can tweak and adapt afterwards.&lt;/p&gt;
+&lt;p&gt;To build this application we'll follow these steps:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Collecting and scraping customer reviews data using Selenium and Scrapy&lt;/li&gt;
+&lt;li&gt;Training a deep learning sentiment classifier on this data using PyTorch&lt;/li&gt;
+&lt;li&gt;Building an interactive web app using Dash&lt;/li&gt;
+&lt;li&gt;Setting a REST API and a Postgres database&lt;/li&gt;
+&lt;li&gt;Dockerizing the app using Docker Compose&lt;/li&gt;
+&lt;li&gt;Deploying to AWS &lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;All the code is available in our github &lt;a href="https://github.com/MarwanDebbiche/post-tuto-deployment"&gt;repository&lt;/a&gt; and organized in independant directories, so you can check it, run it and improve it.&lt;/p&gt;
+&lt;p&gt;Let's get started! 💻&lt;/p&gt;
+&lt;h2&gt;1 - Scraping the data from Trustpilot with Selenium and Scrapy 🧹&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;⚠️ Disclaimer: The scripts below are meant for educational purposes only: scrape responsibly.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;In order to train a sentiment classifier, we need data. We can sure download open source datasets for sentiment analysis tasks such as &lt;a href="http://jmcauley.ucsd.edu/data/amazon/"&gt; Amazon Polarity&lt;/a&gt; or &lt;a href="https://www.kaggle.com/iarunava/imdb-movie-reviews-dataset"&gt;IMDB&lt;/a&gt; movie reviews but for the purpose of this tutorial, &lt;strong&gt;we'll build our own dataset&lt;/strong&gt;. We'll scrape customer reviews from Trustpilot. &lt;/p&gt;
+&lt;p&gt;Trustpilot.com is a consumer review website founded in Denmark in 2007. It hosts reviews of businesses worldwide and nearly 1 million new reviews are posted each month.&lt;/p&gt;
+&lt;p align="center"&gt;
+  &lt;img src="./images/article_11/truspilot.png" style="margin:15px" width="90%"/&gt;
+&lt;/p&gt;
+
+&lt;p&gt;Trustpilot is an interesting source because each customer review is associated with a number of stars.&lt;/p&gt;
+&lt;p align="center"&gt;
+  &lt;img src="./images/article_11/review_label.png" style="margin:15px" width="70%"/&gt;
+&lt;/p&gt;
+
+&lt;p&gt;By leveraging this data, we are able to map each review to a sentiment class. &lt;/p&gt;
+&lt;p&gt;In fact, we defined reviews with:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;1 and 2 stars as &lt;strong&gt;bad reviews&lt;/strong&gt; ❌&lt;/li&gt;
+&lt;li&gt;3 stars as &lt;strong&gt;average reviews&lt;/strong&gt; ⚠️&lt;/li&gt;
+&lt;li&gt;4 and 5 stars as &lt;strong&gt;good reviews&lt;/strong&gt; ✅&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;In order to scrape customer reviews from trustpilot, we first have to understand the structure of the website. &lt;/p&gt;
+&lt;p&gt;Trustpilot is organized by categories of businesses.&lt;/p&gt;
+&lt;p align="center"&gt;
+  &lt;img src="./images/article_11/1-categories.png" style="margin:15px" width="80%"/&gt;
+&lt;/p&gt;
+
+&lt;p&gt;Each category is divided into sub-categories.&lt;/p&gt;
+&lt;p align="center"&gt;
+  &lt;img src="./images/article_11/2-subcategories.png" style="margin:15px" width="80%"/&gt;
+&lt;/p&gt;
+
+&lt;p&gt;Each sub-category is divided into companies.&lt;/p&gt;
+&lt;p align="center"&gt;
+  &lt;img src="./images/article_11/3-companies.png" style="margin:15px" width="80%"/&gt;
+&lt;/p&gt;
+
+&lt;p&gt;And then each company has its own set of reviews, usually spread over many pages.&lt;/p&gt;
+&lt;p align="center"&gt;
+  &lt;img src="./images/article_11/4-reviews.png" style="margin:15px" width="80%"/&gt;
+&lt;/p&gt;
+
+&lt;p&gt;As you see, this is a top down tree structure. In order to scrape the reviews out of it, we'll proceed in two steps.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Step 1️⃣: use Selenium to fetch each company page url&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Step 2️⃣: use Scrapy to extract reviews from each company page&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;Scrape company urls with Selenium: step 1️⃣&lt;/h3&gt;
+&lt;p&gt;&lt;i&gt;All the Selenium code is available and runnable from this &lt;a href="https://github.com/MarwanDebbiche/post-tuto-deployment/blob/master/src/scraping/selenium/scrape_website_urls.ipynb"&gt;notebook&lt;/a&gt;&lt;/i&gt; 📓&lt;/p&gt;
+&lt;p&gt;We first use Selenium because the content of the website that renders the urls of each company is dynamic  which means that it cannot be directly accessed from the page source. It's rather rendered on the front end of the website through Ajax calls.&lt;/p&gt;
+&lt;p&gt;Selenium does a good job extracting this type of data: it simulates a browser that interprets javascript rendered content. When launched, it clicks on each category, narrows down to each sub-category and goes through all the companies one by one and extracts their urls. When it's done, the script saves these urls to a csv file.&lt;/p&gt;
+&lt;p&gt;Let's see how this is done:&lt;/p&gt;
+&lt;p&gt;We'll first import Selenium dependencies along with other utility packages.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;json&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;time&lt;/span&gt;
+
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;bs4&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;BeautifulSoup&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;requests&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;pandas&lt;/span&gt; &lt;span class="kn"&gt;as&lt;/span&gt; &lt;span class="nn"&gt;pd&lt;/span&gt;
+
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;selenium&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;webdriver&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;selenium.common.exceptions&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;NoSuchElementException&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;selenium.common.exceptions&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;TimeoutException&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;selenium.webdriver.support.ui&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;WebDriverWait&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;selenium.webdriver.support&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;expected_conditions&lt;/span&gt; &lt;span class="k"&gt;as&lt;/span&gt; &lt;span class="n"&gt;EC&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;selenium.webdriver.common.by&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;By&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;selenium.webdriver.chrome.options&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Options&lt;/span&gt;
+
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;tqdm&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;tqdm_notebook&lt;/span&gt;
+
+&lt;span class="n"&gt;base_url&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;"https://trustpilot.com"&lt;/span&gt;
+
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;get_soup&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;BeautifulSoup&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;requests&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;content&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'lxml'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;We start by fetching the sub-category URLs nested inside each category.&lt;/p&gt;
+&lt;p&gt;If you open up your browser and inspect the source code, you'll find out 22 category blocks (on the right) located in &lt;code&gt;div&lt;/code&gt; objects that have a &lt;code&gt;class&lt;/code&gt; attribute equal to  &lt;code&gt;category-object&lt;/code&gt;&lt;/p&gt;
+&lt;p align="center"&gt;
+    &lt;img src="./images/article_11/5-category_block.png" style="margin:15px" width="80%"/&gt;
+&lt;/p&gt;
+
+&lt;p&gt;Each category has its own set of sub-categories. Those are located in &lt;code&gt;div&lt;/code&gt; objects that have &lt;code&gt;class&lt;/code&gt; attributes equal to &lt;code&gt;child-category&lt;/code&gt;. We are interested in finding the urls of these subcategories.
+&lt;/p&gt;&lt;p align="center"&gt;
+    &lt;img src="./images/article_11/6-nested_urls.png" style="margin:15px" width="80%"/&gt;
+&lt;/p&gt;&lt;p&gt;&lt;/p&gt;
+&lt;p&gt;Let's first loop over categories and for each one of them collect the URLs of the sub-categories. This can be achieved using Beautifulsoup and requests.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;data&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{}&lt;/span&gt;
+
+&lt;span class="n"&gt;soup&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;get_soup&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;base_url&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="s1"&gt;'/categories'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;category&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;soup&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;findAll&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'div'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s1"&gt;'class'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;'category-object'&lt;/span&gt;&lt;span class="p"&gt;}):&lt;/span&gt;
+    &lt;span class="n"&gt;name&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;category&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;find&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'h3'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s1"&gt;'class'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;'sub-category__header'&lt;/span&gt;&lt;span class="p"&gt;})&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;text&lt;/span&gt;
+    &lt;span class="n"&gt;name&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;name&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;strip&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;name&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{}&lt;/span&gt;  
+    &lt;span class="n"&gt;sub_categories&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;category&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;find&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'div'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s1"&gt;'class'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;'sub-category-list'&lt;/span&gt;&lt;span class="p"&gt;})&lt;/span&gt;
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;sub_category&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;sub_categories&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;findAll&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'div'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s1"&gt;'class'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;'child-category'&lt;/span&gt;&lt;span class="p"&gt;}):&lt;/span&gt;
+        &lt;span class="n"&gt;sub_category_name&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;sub_category&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;find&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'a'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s1"&gt;'class'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;'sub-category-item'&lt;/span&gt;&lt;span class="p"&gt;})&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;text&lt;/span&gt; 
+        &lt;span class="n"&gt;sub_category_uri&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;sub_category&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;find&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'a'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s1"&gt;'class'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;'sub-category-item'&lt;/span&gt;&lt;span class="p"&gt;})[&lt;/span&gt;&lt;span class="s1"&gt;'href'&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; 
+        &lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;name&lt;/span&gt;&lt;span class="p"&gt;][&lt;/span&gt;&lt;span class="n"&gt;sub_category_name&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;sub_category_uri&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Now comes the selenium part: we'll need to loop over the companies of each sub-category and fetch their URLs. &lt;/p&gt;
+&lt;p&gt;Remember, companies are presented inside each sub-category like this:&lt;/p&gt;
+&lt;p align="center"&gt;
+    &lt;img src="./images/article_11/3-companies.png" style="margin:15px" width="80%"/&gt;
+&lt;/p&gt;
+
+&lt;p&gt;We first define a function to fetch company urls of a given subcategory:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;extract_company_urls_form_page&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="n"&gt;a_list&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;driver&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;find_elements_by_xpath&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'//a[@class="category-business-card card"]'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;urls&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get_attribute&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'href'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;a_list&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="n"&gt;dedup_urls&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;list&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;set&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;urls&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;dedup_urls&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;and another function to check if a next page button exists:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;go_next_page&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="k"&gt;try&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="n"&gt;button&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;driver&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;find_element_by_xpath&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'//a[@class="button button--primary next-page"]'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="bp"&gt;True&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;button&lt;/span&gt;
+    &lt;span class="k"&gt;except&lt;/span&gt; &lt;span class="n"&gt;NoSuchElementException&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="bp"&gt;False&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="bp"&gt;None&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Now we initialize Selenium with a headless Chromedriver. This prevents Selenium from opening up a Chrome window thus accelerating the scraping.&lt;/p&gt;
+&lt;p&gt;PS: You'll have to donwload Chromedriver from this &lt;a href="https://chromedriver.chromium.org/"&gt;link&lt;/a&gt; and choose the one that matches your operatig system. It's basically a binary of a Chrome browser that Selenium uses to start.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;options&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Options&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="n"&gt;options&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;add_argument&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'--headless'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;options&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;add_argument&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'--no-sandbox'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;options&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;add_argument&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'start-maximized'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;options&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;add_argument&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'disable-infobars'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;options&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;add_argument&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;"--disable-extensions"&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="n"&gt;prefs&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s2"&gt;"profile.managed_default_content_settings.images"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;span class="n"&gt;options&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;add_experimental_option&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;"prefs"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;prefs&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="n"&gt;driver&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;webdriver&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Chrome&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'./driver/chromedriver'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;options&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;options&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="n"&gt;timeout&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;3&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;The timeout variable is the time (in seconds) Selenium waits for a page to completely load.&lt;/p&gt;
+&lt;p&gt;Now we launch the scraping. This approximatively takes 50 minutes with good internet connexion.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;company_urls&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{}&lt;/span&gt;
+&lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;category&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;tqdm_notebook&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;sub_category&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;tqdm_notebook&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;category&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="n"&gt;leave&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;False&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="n"&gt;company_urls&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;sub_category&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[]&lt;/span&gt;
+
+        &lt;span class="n"&gt;url&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;base_url&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;category&lt;/span&gt;&lt;span class="p"&gt;][&lt;/span&gt;&lt;span class="n"&gt;sub_category&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="s2"&gt;"?numberofreviews=0&amp;amp;timeperiod=0&amp;amp;status=all"&lt;/span&gt;
+        &lt;span class="n"&gt;driver&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="k"&gt;try&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; 
+            &lt;span class="n"&gt;element_present&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;EC&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;presence_of_element_located&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;
+                &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;By&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;CLASS_NAME&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'category-business-card card'&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+
+            &lt;span class="n"&gt;WebDriverWait&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;driver&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;timeout&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;until&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;element_present&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="k"&gt;except&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="k"&gt;pass&lt;/span&gt;
+
+        &lt;span class="n"&gt;next_page&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="bp"&gt;True&lt;/span&gt;
+        &lt;span class="n"&gt;c&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;
+        &lt;span class="k"&gt;while&lt;/span&gt; &lt;span class="n"&gt;next_page&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="n"&gt;extracted_company_urls&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;extract_company_urls_form_page&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+            &lt;span class="n"&gt;company_urls&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;sub_category&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="n"&gt;extracted_company_urls&lt;/span&gt;
+            &lt;span class="n"&gt;next_page&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;button&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;go_next_page&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+
+            &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;next_page&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+                &lt;span class="n"&gt;c&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;
+                &lt;span class="n"&gt;next_url&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;base_url&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;category&lt;/span&gt;&lt;span class="p"&gt;][&lt;/span&gt;&lt;span class="n"&gt;sub_category&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="s2"&gt;"?numberofreviews=0&amp;amp;timeperiod=0&amp;amp;status=all"&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="s1"&gt;'&amp;amp;page={c}'&lt;/span&gt;
+                &lt;span class="n"&gt;driver&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;next_url&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+                &lt;span class="k"&gt;try&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; 
+                    &lt;span class="n"&gt;element_present&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;EC&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;presence_of_element_located&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;
+                        &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;By&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;CLASS_NAME&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'category-business-card card'&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+
+                    &lt;span class="n"&gt;WebDriverWait&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;driver&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;timeout&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;until&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;element_present&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+                &lt;span class="k"&gt;except&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+                    &lt;span class="k"&gt;pass&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Once the scraping is over, we save the company urls to a csv file.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;consolidated_data&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[]&lt;/span&gt;
+
+&lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;category&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;sub_category&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;category&lt;/span&gt;&lt;span class="p"&gt;]:&lt;/span&gt;
+        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;url&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;company_urls&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;sub_category&lt;/span&gt;&lt;span class="p"&gt;]:&lt;/span&gt;
+            &lt;span class="n"&gt;consolidated_data&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;append&lt;/span&gt;&lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="n"&gt;category&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;sub_category&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+
+&lt;span class="n"&gt;df_consolidated_data&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;pd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;DataFrame&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;consolidated_data&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;columns&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'category'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'sub_category'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'company_url'&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+
+&lt;span class="n"&gt;df_consolidated_data&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;to_csv&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'./exports/consolidate_company_urls.csv'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;index&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;False&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;And here's what the data looks like:&lt;/p&gt;
+&lt;p align="center"&gt;
+    &lt;img src="./images/article_11/url_companies.png" style="margin:15px" width="80%"/&gt;
+&lt;/p&gt;
+
+&lt;p&gt;Pretty neat right? Now we'll have to go through the reviews listed in each one of those urls.&lt;/p&gt;
+&lt;h3&gt;Scrape customer reviews with Scrapy: step 2️⃣&lt;/h3&gt;
+&lt;p&gt;&lt;i&gt;All the scrapy code can be found in this &lt;a href="https://github.com/MarwanDebbiche/post-tuto-deployment/tree/master/src/scraping/scrapy"&gt;folder&lt;/a&gt;&lt;/i&gt; 📁&lt;/p&gt;
+&lt;p&gt;Ok, now we're ready to use Scrapy.&lt;/p&gt;
+&lt;p&gt;First, you need to install it either using:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;conda: &lt;code&gt;conda install -c conda-forge scrapy&lt;/code&gt; &lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;or &lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;pip: &lt;code&gt;pip install scrapy&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Then, you'll need to start a project:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nb"&gt;cd&lt;/span&gt; src/scraping/scrapy
+scrapy startproject trustpilot
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;This command creates the structure of a Scrapy project. Here's what it looks like:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;scrapy&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;
+    &lt;span class="n"&gt;scrapy&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;cfg&lt;/span&gt;            &lt;span class="c1"&gt;# deploy configuration file&lt;/span&gt;
+
+    &lt;span class="n"&gt;trustpilot&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;             &lt;span class="c1"&gt;# project's Python module, you'll import your code from here&lt;/span&gt;
+        &lt;span class="fm"&gt;__init__&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;py&lt;/span&gt;
+
+        &lt;span class="n"&gt;items&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;py&lt;/span&gt;          &lt;span class="c1"&gt;# project items definition file&lt;/span&gt;
+
+        &lt;span class="n"&gt;middlewares&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;py&lt;/span&gt;    &lt;span class="c1"&gt;# project middlewares file&lt;/span&gt;
+
+        &lt;span class="n"&gt;pipelines&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;py&lt;/span&gt;      &lt;span class="c1"&gt;# project pipelines file&lt;/span&gt;
+
+        &lt;span class="n"&gt;settings&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;py&lt;/span&gt;       &lt;span class="c1"&gt;# project settings file&lt;/span&gt;
+
+        &lt;span class="n"&gt;spiders&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;          &lt;span class="c1"&gt;# a directory where you'll later put your spiders&lt;/span&gt;
+            &lt;span class="fm"&gt;__init__&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;py&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Using Scrapy for the first time can be overwhelming, so to learn more about it, you can visit the official &lt;a href="http://doc.scrapy.org/en/latest/intro/tutorial.html"&gt;tutorials&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;To build our scraper, we'll have to create a spider inside the &lt;code&gt;spiders&lt;/code&gt; folder. We'll call it &lt;code&gt;scraper.py&lt;/code&gt; and change some parameters in &lt;code&gt;settings.py&lt;/code&gt;. We won't change the other files.&lt;/p&gt;
+&lt;p&gt;What the scraper will do is the following:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;It starts from a company url&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;It goes through each customer review and yields a dictionary of data containing the following items&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;comment: the text review&lt;/li&gt;
+&lt;li&gt;rating: the number of stars (1 to 5)&lt;/li&gt;
+&lt;li&gt;url_website: the company url on trustpilot &lt;/li&gt;
+&lt;li&gt;company_name: the company name being reviewed&lt;/li&gt;
+&lt;li&gt;company_website: the website of the company being reviewed&lt;/li&gt;
+&lt;li&gt;company_logo: the url of logo of the company being reviewed &lt;/li&gt;
+&lt;li&gt;It moves to the next page if any&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Here's the full script.&lt;/p&gt;
+&lt;p&gt;To fully understand it, you should inspect the source code. It's really easy to get. &lt;/p&gt;
+&lt;p&gt;In any case, if you have a question don't hesitate to post it in the comment section ⬇&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;re&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;pandas&lt;/span&gt; &lt;span class="kn"&gt;as&lt;/span&gt; &lt;span class="nn"&gt;pd&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;scrapy&lt;/span&gt;
+
+&lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;Pages&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;scrapy&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Spider&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="n"&gt;name&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;"trustpilot"&lt;/span&gt;
+
+    &lt;span class="n"&gt;company_data&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;pd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;read_csv&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'../selenium/exports/consolidate_company_urls.csv'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;start_urls&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;company_data&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'company_url'&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;unique&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;tolist&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;parse&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;response&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="n"&gt;company_logo&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;response&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;xpath&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'//img[@class="business-unit-profile-summary__image"]/@src'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;extract_first&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+        &lt;span class="n"&gt;company_website&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;response&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;xpath&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;"//a[@class='badge-card__section badge-card__section--hoverable']/@href"&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;extract_first&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+        &lt;span class="n"&gt;company_name&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;response&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;xpath&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;"//span[@class='multi-size-header__big']/text()"&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;extract_first&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+        &lt;span class="n"&gt;comments&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;response&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;xpath&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;"//p[@class='review-content__text']"&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="n"&gt;comments&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;comment&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;xpath&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'.//text()'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;extract&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;comment&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;comments&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+        &lt;span class="n"&gt;comments&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[[&lt;/span&gt;&lt;span class="n"&gt;c&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;strip&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;c&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;comment_list&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;comment_list&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;comments&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+        &lt;span class="n"&gt;comments&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;' '&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;join&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;comment_list&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;comment_list&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;comments&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+
+        &lt;span class="n"&gt;ratings&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;response&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;xpath&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;"//div[@class='star-rating star-rating--medium']//img/@alt"&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;extract&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+        &lt;span class="n"&gt;ratings&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nb"&gt;int&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;re&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;match&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'\d+'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;rating&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;group&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;rating&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;ratings&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+
+        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;comment&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;rating&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="nb"&gt;zip&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;comments&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;ratings&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+            &lt;span class="k"&gt;yield&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+                &lt;span class="s1"&gt;'comment'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;comment&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                &lt;span class="s1"&gt;'rating'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;rating&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                &lt;span class="s1"&gt;'url_website'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;response&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                &lt;span class="s1"&gt;'company_name'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;company_name&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                &lt;span class="s1"&gt;'company_website'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;company_website&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                &lt;span class="s1"&gt;'company_logo'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;company_logo&lt;/span&gt;
+            &lt;span class="p"&gt;}&lt;/span&gt;
+
+        &lt;span class="n"&gt;next_page&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;response&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;css&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'a[data-page-number=next-page] ::attr(href)'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;extract_first&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;next_page&lt;/span&gt; &lt;span class="ow"&gt;is&lt;/span&gt; &lt;span class="ow"&gt;not&lt;/span&gt; &lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="n"&gt;request&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;response&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;follow&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;next_page&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;callback&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;parse&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+            &lt;span class="k"&gt;yield&lt;/span&gt; &lt;span class="n"&gt;request&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Before launching the scraper, you have to change a couple of things in the settings.py:&lt;/p&gt;
+&lt;p&gt;Here are the changes we made:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# Obey robots.txt rules&lt;/span&gt;
+&lt;span class="n"&gt;ROBOTSTXT_OBEY&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="bp"&gt;False&lt;/span&gt;
+
+&lt;span class="c1"&gt;# Configure maximum concurrent requests performed by Scrapy (default: 16)&lt;/span&gt;
+&lt;span class="n"&gt;CONCURRENT_REQUESTS&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;32&lt;/span&gt;
+
+&lt;span class="c1"&gt;#Export to csv&lt;/span&gt;
+&lt;span class="n"&gt;FEED_FORMAT&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;"csv"&lt;/span&gt;
+&lt;span class="n"&gt;FEED_URI&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;"comments_trustpilot_en.csv"&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;This indicates to the scraper to ignore robots.txt, to use 32 concurrent requests and to export the data into a csv format under the filename: &lt;code&gt;comments_trustpilot_en.csv&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Now time to launch the scraper: &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nb"&gt;cd&lt;/span&gt; src/scraping/scrapy
+scrapy crawl trustpilot
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;We'll let it run for a little bit of time.&lt;/p&gt;
+&lt;p&gt;Note that we can interrupt it at any moment since it saves the data on the fly on this output folder is &lt;code&gt;src/scraping/scrapy&lt;/code&gt;.&lt;/p&gt;
+&lt;h2&gt;2 - Training a sentiment classifer usig PyTorch 🤖&lt;/h2&gt;
+&lt;p&gt;&lt;em&gt;The code and the model we'll be using here are inspired from this github &lt;a href="https://github.com/ahmedbesbes/character-based-cnn"&gt;repo&lt;/a&gt; so go check it for additional information. If you want to stick to this project's repo you can look at this &lt;a href="https://github.com/MarwanDebbiche/post-tuto-deployment/tree/master/src/training"&gt;link&lt;/a&gt;&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;Now that the data is collected, we're ready to train a sentiment classifier to predict the labels we defined earlier.&lt;/p&gt;
+&lt;p&gt;There are a wide range of possible models to use. The one we'll be training is a character based convolutional neural network. It's based on this &lt;a href="https://arxiv.org/pdf/1509.01626.pdf"&gt;paper&lt;/a&gt; and it proved to be really good on text classification tasks such as binary classification of Amazon Reviews datasets.&lt;/p&gt;
+&lt;p&gt;The question you'd be asking up-front though is the following: how would you use CNNs for text classification? Aren't these architectures specifically designed for image data?&lt;/p&gt;
+&lt;p&gt;Well, the truth is, CNN are way more versatile and their application can extend the scope of image classification. In fact, they are also able to capture sequential information that is inherent to text data. The only only trick here is to efficiently represent the input text.&lt;/p&gt;
+&lt;p&gt;To see how this is done, imagine the following tweet:&lt;/p&gt;
+&lt;p align="center"&gt;
+    &lt;img src="./images/article_11/tweet.png" style="margin:15px" width="60%"/&gt;
+&lt;/p&gt;
+
+&lt;p&gt;Assuming an alphabet of size 70 containing the english letters and the special characters and an arbitrary maximum length of 140, one possible representation of this sentence is a (70, 140) matrix where each column is a one hot vector indiciating the position of a given character in the alphabet and 140 being the maximum length of tweets. This porcess is called &lt;strong&gt;quantization&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;Note that if a sentence is too long, the representation truncates up to the first 140 characters. On the other hand, if the sentence is too short 0 column vectors are padded until the (70, 140) shape is reached.&lt;/p&gt;
+&lt;p&gt;So what to do now with this representation?&lt;/p&gt;
+&lt;p align="center"&gt;
+    &lt;img src="./images/article_11/tweet_matrix.png" style="margin:15px" width="60%"/&gt;
+&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Feed it to a CNN for classification, obviously 😁&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;But there's a small trick though. Convolutions are usually performed using 2D-shaped kernels, because these structures capture the 2D spatial information lying in the pixels. 
+Text is however not suited to this type of convolutions beacuse letters follow each other sequentially, in one dimension only, to form a meaning. To capture this 1-dimensional denpendency, we'll use &lt;strong&gt;1D convolutions&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;So how does a 1-D convolution work?&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Unlike 2D-convolutions that make a 2D kernel slide horizontally and vertically over the pixels, 1D-convolutions use 1D kernels that slide horizontally only over the columns (i.e. the characters) to capture the dependency between characters and their compositions. You could think for example about a 1D kernel of size 3 as a character 3-gram detector that fires when it detects a composition of three sucessive letters that is relevant to the prediction.&lt;/p&gt;
+&lt;p&gt;The diagram below shows the architecture we'll be using: &lt;/p&gt;
+&lt;p align="center"&gt;
+    &lt;img src="./images/article_11/character_cnn_architecture.png" style="margin:15px" width="80%"/&gt;
+&lt;/p&gt;
+
+&lt;p&gt;It has 6 convolutional layers:&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Layer&lt;/th&gt;
+&lt;th&gt;Number of Kernels&lt;/th&gt;
+&lt;th&gt;Kernel size&lt;/th&gt;
+&lt;th&gt;Pool&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;256&lt;/td&gt;
+&lt;td&gt;7&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;256&lt;/td&gt;
+&lt;td&gt;7&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;256&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;N/A&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;256&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;N/A&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;256&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;N/A&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;6&lt;/td&gt;
+&lt;td&gt;256&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;and 2 fully connected layers:&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Layer&lt;/th&gt;
+&lt;th&gt;Number of neurons&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;7&lt;/td&gt;
+&lt;td&gt;1024&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;8&lt;/td&gt;
+&lt;td&gt;1024&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;9&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;On the raw data, i.e. the matrix representation of a sentence, convolutions with a kernel of size 7 are applied. Then the output of this layer is fed to a second convolution layer with a kernel of size 7 as well, etc, until the last conv layer that has a kernel of size 3.&lt;/p&gt;
+&lt;p&gt;After the last convolution layer, the output is flattened and passed through two successive fully connected layers that act as a classifier.&lt;/p&gt;
+&lt;p&gt;To learn more about character level CNN and how they work, you can watch this video&lt;/p&gt;
+&lt;!-- insert my youtube video here --&gt;
+
+&lt;p align="center"&gt;
+    &lt;iframe allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen="" frameborder="0" height="400" src="https://www.youtube.com/embed/CNY8VjJt-iQ" style="margin:15px" width="600"&gt;&lt;/iframe&gt;
+&lt;/p&gt;
+
+&lt;p&gt;Character CNN are interesting for various reasons since they have nice properties 💡&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;They are quite powerful in text classification (see paper's benchmark) even though they don't have any notion of semantics&lt;/li&gt;
+&lt;li&gt;You don't need to apply any text preprocessing (tokenization, lemmatization, stemming ...) while using them&lt;/li&gt;
+&lt;li&gt;They handle misspelled words and OOV (out-of-vocabulary) tokens&lt;/li&gt;
+&lt;li&gt;They are faster to train compared to recurrent neural networks&lt;/li&gt;
+&lt;li&gt;They are lightweight since they don't require storing a large word embedding matrix. Hence, you can deploy them in production easily&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;That's all about the theory now !&lt;/p&gt;
+&lt;h3&gt;How to train the model using PyTorch  🔥&lt;/h3&gt;
+&lt;p&gt;In order to train a character level cnn, you'll find all the files you need under the &lt;code&gt;src/training/&lt;/code&gt; folder.&lt;/p&gt;
+&lt;p&gt;Here's the structure of the code inside this folder:
+- &lt;code&gt;train.py&lt;/code&gt;: used for training a model
+- &lt;code&gt;predict.py&lt;/code&gt;: used for the testing and inference
+- src: a folder that contains:
+    - &lt;code&gt;model.py&lt;/code&gt;: the actual CNN model (model initialization and forward method
+    - &lt;code&gt;dataloader.py&lt;/code&gt;: the script responsible of passing the data to the training after processing 
+    - &lt;code&gt;utils.py&lt;/code&gt;: a set of utility functions for text preprocessing (url/hashtag/user_mention removal)&lt;/p&gt;
+&lt;p&gt;To train our classifier, run the following commands:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nb"&gt;cd&lt;/span&gt; src/training/
+
+python train.py --data_path ./data/tp_amazon.csv &lt;span class="se"&gt;\ &lt;/span&gt;
+                --validation_split &lt;span class="m"&gt;0&lt;/span&gt;.1 &lt;span class="se"&gt;\&lt;/span&gt;
+                --label_column rating &lt;span class="se"&gt;\&lt;/span&gt;
+                --text_column comment &lt;span class="se"&gt;\&lt;/span&gt;
+                --max_length &lt;span class="m"&gt;1014&lt;/span&gt; &lt;span class="se"&gt;\&lt;/span&gt;
+                --dropout_input &lt;span class="m"&gt;0&lt;/span&gt; &lt;span class="se"&gt;\&lt;/span&gt;
+                --group_labels &lt;span class="m"&gt;1&lt;/span&gt;  &lt;span class="se"&gt;\&lt;/span&gt;
+                --balance &lt;span class="m"&gt;1&lt;/span&gt; &lt;span class="se"&gt;\&lt;/span&gt;
+                --ignore_center &lt;span class="m"&gt;0&lt;/span&gt; &lt;span class="se"&gt;\&lt;/span&gt;
+                --model_name en_trustpilot &lt;span class="se"&gt;\&lt;/span&gt;
+                --log_every &lt;span class="m"&gt;250&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;When it's done, you can find the trained models in &lt;code&gt;src/training/models&lt;/code&gt; directory.&lt;/p&gt;
+&lt;h4&gt;Model performance 🎯&lt;/h4&gt;
+&lt;p&gt;&lt;strong&gt;On training set&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;On the training set we report the following metrics for the best model (epoch 5):&lt;/p&gt;
+&lt;p align="center"&gt;
+    &lt;img src="./images/article_11/metrics_train.png" style="margin:15px" width="50%"/&gt;
+&lt;/p&gt;
+
+&lt;p&gt;Here's the corresponding tensorboard training logs:&lt;/p&gt;
+&lt;p align="center"&gt;
+    &lt;img src="./images/article_11/tensorboard_train.png" style="margin:15px" width="90%"/&gt;
+&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;On validation set&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;On the validation set we report the following metrics for the best model (epoch 5):&lt;/p&gt;
+&lt;p align="center"&gt;
+    &lt;img src="./images/article_11/metrics_val.png" style="margin:15px" width="50%"/&gt;
+&lt;/p&gt;
+
+&lt;p&gt;Here's the corresponding validation tensorboard logs:&lt;/p&gt;
+&lt;p align="center"&gt;
+    &lt;img src="./images/article_11/tensorboard_test.png" style="margin:15px" width="90%"/&gt;
+&lt;/p&gt;
+
+&lt;hr/&gt;
+
+&lt;p&gt;Few remarks according to these figures:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The model is learning and correctly converging as we see it in the decreasing losses&lt;/li&gt;
+&lt;li&gt;The model is very good at identifying good and bad reviews. It has a slightly lower performance on average reviews though. This can be explained by the core nature of these reviews. They are more nuanced in general and easily, even for a human, mis-interpreted as bad or good reviews.&lt;/li&gt;
+&lt;li&gt;A three class classification problem is more difficult than a binary one. In fact, if you focus on a binary classification problem, you can reach 95% accuracy. Nevertheless, training a 3 class classifier has the advantage of identifying mitigated reviews which can be interesting.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;To learn more about the training arguments and options, please check out the original &lt;a href="https://github.com/ahmedbesbes/character-based-cnn"&gt;repo&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;From now on, we'll use the trained model that is saved as a release &lt;a href="https://github.com/ahmedbesbes/character-based-cnn/releases/download/model_en_tp_amazon/model_tp_amazon_1014.pth"&gt;here&lt;/a&gt;. When running the app for the first time, it'll get downloaded from that link and locally saved (in the container) for the inference.&lt;/p&gt;
+&lt;h2&gt;3 - Building an interactive web app 📲 with Dash, Flask and PostgeSQL&lt;/h2&gt;
+&lt;p&gt;&lt;em&gt;The dash code can be found &lt;a href="https://github.com/MarwanDebbiche/post-tuto-deployment/tree/master/src/dash"&gt;here&lt;/a&gt; and the api code &lt;a href="https://github.com/MarwanDebbiche/post-tuto-deployment/tree/master/src/api"&gt;here&lt;/a&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;Now that we have trained the sentiment classifier, let's build our application so that end-users can interact with the model and evaluate new brands.&lt;/p&gt;
+&lt;p&gt;Here is a schema of our app architecture:&lt;/p&gt;
+&lt;p align="center"&gt;
+    &lt;img src="./images/article_11/7-application_schema.png" style="margin:15px" width="80%"/&gt;
+&lt;/p&gt;
+
+&lt;p&gt;As you can see, there are four building blocks in our app:
+- A visualization application built using &lt;a href="https://dash.plot.ly/"&gt;Dash&lt;/a&gt;.
+- A &lt;a href="https://flask.palletsprojects.com/en/1.1.x/"&gt;Flask&lt;/a&gt; REST API.
+- A &lt;a href="https://www.postgresql.org/"&gt;PostgreSQL&lt;/a&gt; database
+- Our trained Machine Learning &lt;a href="https://github.com/ahmedbesbes/character-based-cnn/releases/download/english/model_en.pth"&gt;model&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;The Dash app will make http requests to the Flask API, wich will in turn interact with either the PostgreSQL database by writing or reading records to it, or the ML model by serving it for real-time inference.&lt;/p&gt;
+&lt;p&gt;If you are already familiar with Dash, you know that it is built on top of Flask. So we could basically get rid of the API and put everything within the dash code.&lt;/p&gt;
+&lt;p&gt;We chose not to for a very simple reason: &lt;strong&gt;it makes the logic and the visualization parts independant&lt;/strong&gt;. Indeed, because we have a separated API, we can with very little effort replace the Dash app with any other frontend technology, or add a mobile or desktop app.&lt;/p&gt;
+&lt;p&gt;Now, let's have a closer look at how those blocks are built. &lt;/p&gt;
+&lt;h3&gt;PostgreSQL Database&lt;/h3&gt;
+&lt;p&gt;Nothnig fancy or original regarding the database part. We chose to use one of the most widely used relational databases: PostgreSQL.&lt;/p&gt;
+&lt;p&gt;To run a PostgreSQL database for local development, you can either download PostgreSQL from the &lt;a href="https://www.postgresql.org/download/"&gt;official website&lt;/a&gt; or, more simply, launch a postgres container using &lt;a href="https://hub.docker.com/_/postgres"&gt;Docker&lt;/a&gt;:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;docker pull postgres
+docker run --name postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=password -e POSTGRES_DB=postgres -p 5432:5432 -d postgres
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;If you are not familiar with docker yet, don't worry, we'll talk about it very soon.&lt;/p&gt;
+&lt;p&gt;The two following commands allow to:
+- pull a &lt;a href="https://hub.docker.com/_/postgres"&gt;postgres docker image&lt;/a&gt;  from Docker Hub
+- run this image in a container&lt;/p&gt;
+&lt;h3&gt;Flask API&lt;/h3&gt;
+&lt;p&gt;The RESTful API is the most important part of our app. It is responsible for the interractions with both the machine learning model and the database.&lt;/p&gt;
+&lt;p&gt;Let's have a look at the routes needed for our api:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Sentiment Classification: &lt;code&gt;POST /api/predict&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Create review: &lt;code&gt;POST /api/review&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Get reviews: &lt;code&gt;GET /api/predicts&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;Sentiment Classification Route&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;POST /api/predict&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;This route used to predict the sentiment based on the review's text.&lt;/p&gt;
+&lt;p&gt;Body:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="nt"&gt;"review"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;"I hate this brand..."&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Response:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="mf"&gt;0.123&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;As you can see, this route gets a text field called &lt;code&gt;review&lt;/code&gt; and returns a sentiment score based on that text.&lt;/p&gt;
+&lt;p&gt;It starts by downloading the trained model from github and saving it to disk. Then it loads it and pass it to GPU or CPU.&lt;/p&gt;
+&lt;p&gt;When the api recieves an input review it passes it to the &lt;code&gt;predict_sentiment&lt;/code&gt; function. This function is responsible of representing the raw text in a matrix format and feeding it to the model.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;ml.model&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;CharacterLevelCNN&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;ml.utils&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;predict_sentiment&lt;/span&gt;
+
+&lt;span class="n"&gt;model_name&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;'model_en.pth'&lt;/span&gt;
+&lt;span class="n"&gt;model_path&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="s1"&gt;'./ml/models/{model_name}'&lt;/span&gt;
+&lt;span class="n"&gt;model&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;CharacterLevelCNN&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+
+&lt;span class="c1"&gt;# download the trained PyTorch model from Github&lt;/span&gt;
+&lt;span class="c1"&gt;# and save it at src/api/ml/models/&lt;/span&gt;
+&lt;span class="c1"&gt;# this is done at the first run of the API&lt;/span&gt;
+
+&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;model_name&lt;/span&gt; &lt;span class="ow"&gt;not&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;os&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;listdir&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'./ml/models/'&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="s1"&gt;'downloading the trained model {model_name}'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;wget&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;download&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;
+        &lt;span class="s2"&gt;"https://github.com/ahmedbesbes/character-based-cnn/releases/download/english/model_en.pth"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="n"&gt;out&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;model_path&lt;/span&gt;
+    &lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="k"&gt;else&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'model already saved to api/ml/models'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="c1"&gt;#####&lt;/span&gt;
+
+&lt;span class="c1"&gt;# load the model&lt;/span&gt;
+&lt;span class="c1"&gt;# pass it to GPU / CPU&lt;/span&gt;
+
+&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;torch&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;cuda&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;is_available&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="n"&gt;trained_weights&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;torch&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;load&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;model_path&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="k"&gt;else&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="n"&gt;trained_weights&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;torch&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;load&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;model_path&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;map_location&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;'cpu'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;model&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;load_state_dict&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;trained_weights&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;model&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;eval&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'PyTorch model loaded !'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="c1"&gt;#####&lt;/span&gt;
+
+&lt;span class="nd"&gt;@api.route&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'/predict'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;methods&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'POST'&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;predict_rating&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="sd"&gt;'''&lt;/span&gt;
+&lt;span class="sd"&gt;    Endpoint to predict the rating using the&lt;/span&gt;
+&lt;span class="sd"&gt;    review's text data.&lt;/span&gt;
+&lt;span class="sd"&gt;    '''&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;method&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="s1"&gt;'POST'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="s1"&gt;'review'&lt;/span&gt; &lt;span class="ow"&gt;not&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;form&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;jsonify&lt;/span&gt;&lt;span class="p"&gt;({&lt;/span&gt;&lt;span class="s1"&gt;'error'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;'no review in body'&lt;/span&gt;&lt;span class="p"&gt;}),&lt;/span&gt; &lt;span class="mi"&gt;400&lt;/span&gt;
+        &lt;span class="k"&gt;else&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="n"&gt;parameters&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;model&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get_model_parameters&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+            &lt;span class="n"&gt;review&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;form&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'review'&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+            &lt;span class="n"&gt;output&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;predict_sentiment&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;model&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;review&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;**&lt;/span&gt;&lt;span class="n"&gt;parameters&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+            &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;jsonify&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;float&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;output&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;strong&gt;Create Review&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;POST /api/review&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;This route is used to save a review to the database (with associated ratings and user information).&lt;/p&gt;
+&lt;p&gt;Body:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="nt"&gt;"review"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;"I hate this brand..."&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="nt"&gt;"rating"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="nt"&gt;"suggested_rating"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="nt"&gt;"sentiment_score"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mf"&gt;0.123&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="nt"&gt;"brand"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;"Apple"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="nt"&gt;"user_agent"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;"Mozilla/..."&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="nt"&gt;"ip_address"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;"127.0.0.1"&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Response:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;
+  &lt;span class="nt"&gt;"id"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;123&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+  &lt;span class="nt"&gt;"review"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;"I hate this brand..."&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+  &lt;span class="nt"&gt;"rating"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+  &lt;span class="nt"&gt;"suggested_rating"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+  &lt;span class="nt"&gt;"sentiment_score"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mf"&gt;0.123&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+  &lt;span class="nt"&gt;"brand"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;"Apple"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+  &lt;span class="nt"&gt;"user_agent"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;"Mozilla/..."&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+  &lt;span class="nt"&gt;"ip_address"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;"127.0.0.1"&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;In order to interact with the database, we will use the Object Relational Mapping (ORM) &lt;a href="http://docs.peewee-orm.com/en/latest/"&gt;peewee&lt;/a&gt;. It lets us define the database tables using python objects, and takes care of connecting to the database and querying it.&lt;/p&gt;
+&lt;p&gt;This is done in the &lt;code&gt;src/api/db.py&lt;/code&gt; file:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;peewee&lt;/span&gt; &lt;span class="kn"&gt;as&lt;/span&gt; &lt;span class="nn"&gt;pw&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;config&lt;/span&gt;
+
+&lt;span class="n"&gt;db&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;pw&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;PostgresqlDatabase&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;
+    &lt;span class="n"&gt;config&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;POSTGRES_DB&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="n"&gt;user&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;config&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;POSTGRES_USER&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; 
+    &lt;span class="n"&gt;password&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;config&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;POSTGRES_PASSWORD&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="n"&gt;host&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;config&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;POSTGRES_HOST&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; 
+    &lt;span class="n"&gt;port&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;config&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;POSTGRES_PORT&lt;/span&gt;
+&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;BaseModel&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;pw&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Model&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;Meta&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="n"&gt;database&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;db&lt;/span&gt;
+
+&lt;span class="c1"&gt;# Table Description&lt;/span&gt;
+&lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;Review&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;BaseModel&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+
+    &lt;span class="n"&gt;review&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;pw&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;TextField&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="n"&gt;rating&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;pw&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;IntegerField&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="n"&gt;suggested_rating&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;pw&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;IntegerField&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="n"&gt;sentiment_score&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;pw&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;FloatField&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="n"&gt;brand&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;pw&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;TextField&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="n"&gt;user_agent&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;pw&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;TextField&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="n"&gt;ip_address&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;pw&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;TextField&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;serialize&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="n"&gt;data&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+            &lt;span class="s1"&gt;'id'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;id&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+            &lt;span class="s1"&gt;'review'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;review&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+            &lt;span class="s1"&gt;'rating'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="nb"&gt;int&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;rating&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
+            &lt;span class="s1"&gt;'suggested_rating'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="nb"&gt;int&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;suggested_rating&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
+            &lt;span class="s1"&gt;'sentiment_score'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="nb"&gt;float&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sentiment_score&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
+            &lt;span class="s1"&gt;'brand'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;brand&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+            &lt;span class="s1"&gt;'user_agent'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;user_agent&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+            &lt;span class="s1"&gt;'ip_address'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ip_address&lt;/span&gt;
+        &lt;span class="p"&gt;}&lt;/span&gt;
+
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;data&lt;/span&gt;
+
+&lt;span class="c1"&gt;# Connection and table creation&lt;/span&gt;
+&lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;connect&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;create_tables&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="n"&gt;Review&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Having done all this using peewee makes it super easy to define the api routes to save and get reviews:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;db&lt;/span&gt;
+
+&lt;span class="nd"&gt;@api.route&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'/review'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;methods&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'POST'&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;post_review&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="sd"&gt;'''&lt;/span&gt;
+&lt;span class="sd"&gt;    Save review to database.&lt;/span&gt;
+&lt;span class="sd"&gt;    '''&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;method&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="s1"&gt;'POST'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="n"&gt;expected_fields&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;
+            &lt;span class="s1"&gt;'review'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+            &lt;span class="s1"&gt;'rating'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+            &lt;span class="s1"&gt;'suggested_rating'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+            &lt;span class="s1"&gt;'sentiment_score'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+            &lt;span class="s1"&gt;'brand'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+            &lt;span class="s1"&gt;'user_agent'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+            &lt;span class="s1"&gt;'ip_address'&lt;/span&gt;
+        &lt;span class="p"&gt;]&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nb"&gt;any&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;field&lt;/span&gt; &lt;span class="ow"&gt;not&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;form&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;field&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;expected_fields&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+            &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;jsonify&lt;/span&gt;&lt;span class="p"&gt;({&lt;/span&gt;&lt;span class="s1"&gt;'error'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;'Missing field in body'&lt;/span&gt;&lt;span class="p"&gt;}),&lt;/span&gt; &lt;span class="mi"&gt;400&lt;/span&gt;
+
+        &lt;span class="n"&gt;query&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Review&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;create&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;**&lt;/span&gt;&lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;form&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;jsonify&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;query&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;serialize&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;strong&gt;Get Reviews&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;GET /api/reviews&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;This route is used to get reviews from database.&lt;/p&gt;
+&lt;p&gt;Response:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;
+    &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="nt"&gt;"id"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;123&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="nt"&gt;"review"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;"I hate this brand..."&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="nt"&gt;"rating"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="nt"&gt;"suggested_rating"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="nt"&gt;"sentiment_score"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mf"&gt;0.123&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="nt"&gt;"brand"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;"Apple"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="nt"&gt;"user_agent"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;"Mozilla/..."&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="nt"&gt;"ip_address"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;"127.0.0.1"&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Similarly to what we have done for the route &lt;code&gt;POST /api/review&lt;/code&gt;, we use peewee to query the database. This makes the route's code quite simple:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nd"&gt;@api.route&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'/reviews'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;methods&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'GET'&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;get_reviews&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="sd"&gt;'''&lt;/span&gt;
+&lt;span class="sd"&gt;    Get all reviews.&lt;/span&gt;
+&lt;span class="sd"&gt;    '''&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;method&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="s1"&gt;'GET'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="n"&gt;query&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Review&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;select&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;jsonify&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="n"&gt;r&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;serialize&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;r&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;query&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;Dash front-end&lt;/h3&gt;
+&lt;p&gt;Dash is a visualization library that allows you to write html elements such divs, paragraphs and headers in a python syntax that get later rendered into React components.
+This allows a great freedom to those who want to quickly craft a little web app but don't have front-end expertise.&lt;/p&gt;
+&lt;p&gt;Dash is easy to grasp. Here's a small hello world example:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# -*- coding: utf-8 -*-&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;dash&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;dash_core_components&lt;/span&gt; &lt;span class="kn"&gt;as&lt;/span&gt; &lt;span class="nn"&gt;dcc&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;dash_html_components&lt;/span&gt; &lt;span class="kn"&gt;as&lt;/span&gt; &lt;span class="nn"&gt;html&lt;/span&gt;
+
+&lt;span class="n"&gt;external_stylesheets&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'https://codepen.io/chriddyp/pen/bWLwgP.css'&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+
+&lt;span class="n"&gt;app&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;dash&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Dash&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="vm"&gt;__name__&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;external_stylesheets&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;external_stylesheets&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="n"&gt;app&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;layout&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;html&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Div&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;children&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;
+    &lt;span class="n"&gt;html&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;H1&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;children&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;'Hello Dash'&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
+
+    &lt;span class="n"&gt;html&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Div&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;children&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;'''&lt;/span&gt;
+&lt;span class="s1"&gt;        Dash: A web application framework for Python.&lt;/span&gt;
+&lt;span class="s1"&gt;    '''&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
+
+    &lt;span class="n"&gt;dcc&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Graph&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;
+        &lt;span class="nb"&gt;id&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;'example-graph'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="n"&gt;figure&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;
+            &lt;span class="s1"&gt;'data'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;
+                &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s1"&gt;'x'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="s1"&gt;'y'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="s1"&gt;'type'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;'bar'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'name'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;'SF'&lt;/span&gt;&lt;span class="p"&gt;},&lt;/span&gt;
+                &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s1"&gt;'x'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="s1"&gt;'y'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="s1"&gt;'type'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;'bar'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'name'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="sa"&gt;u&lt;/span&gt;&lt;span class="s1"&gt;'Montréal'&lt;/span&gt;&lt;span class="p"&gt;},&lt;/span&gt;
+            &lt;span class="p"&gt;],&lt;/span&gt;
+            &lt;span class="s1"&gt;'layout'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+                &lt;span class="s1"&gt;'title'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;'Dash Data Visualization'&lt;/span&gt;
+            &lt;span class="p"&gt;}&lt;/span&gt;
+        &lt;span class="p"&gt;}&lt;/span&gt;
+    &lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="p"&gt;])&lt;/span&gt;
+
+&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="vm"&gt;__name__&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="s1"&gt;'__main__'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="n"&gt;app&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;run_server&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;debug&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;True&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;As you see, components are imported from &lt;code&gt;dash_core_components&lt;/code&gt; and &lt;code&gt;dash_html_components&lt;/code&gt; and inserted into lists and dictionaries, then affected to the &lt;code&gt;layout&lt;/code&gt; attribute of the dash &lt;code&gt;app&lt;/code&gt;.
+If you're experienced with Flask, you'll notice some similarities here. If fact, Dash is build on top of Flask.&lt;/p&gt;
+&lt;p&gt;Here's what the app looks like in the browser when you visit: localhost:8050&lt;/p&gt;
+&lt;p align="center"&gt;
+    &lt;img src="./images/article_11/dash_hello_world.png" style="margin:15px" width="90%"/&gt;
+&lt;/p&gt;
+
+&lt;p&gt;Pretty neat right?&lt;/p&gt;
+&lt;p&gt;Dash allows you to add many other UI components very easily such as buttons, sliders, multi selectors etc. You can learn more about &lt;a href="https://dash.plot.ly/dash-core-components"&gt;dash-core-components&lt;/a&gt; and &lt;a href="https://dash.plot.ly/dash-html-components"&gt;dash-html-components&lt;/a&gt; from the official documentation.&lt;/p&gt;
+&lt;p&gt;In our app, we also used &lt;a href="https://dash-bootstrap-components.opensource.faculty.ai/l/"&gt;dash bootstrap components&lt;/a&gt; to make the UI mobile responsive.&lt;/p&gt;
+&lt;h4&gt;Callbacks&lt;/h4&gt;
+&lt;p&gt;To make these components interact with each other, dash introduced the concept of &lt;code&gt;callback&lt;/code&gt;. Callbacks are functions that get called to affect the appearance of an html element (the &lt;strong&gt;Output&lt;/strong&gt;) everytime the value of another element (the &lt;strong&gt;Input&lt;/strong&gt;) changes.
+Imagine the following situation: you have an html input field of id="A" and you want when everytime it gets an input to copy it inside a paragraph element of id="B", dynamically, without reloading the page. &lt;/p&gt;
+&lt;p&gt;Here's how you'd do it with a callback:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;dash.dependencies&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Input&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;Output&lt;/span&gt;
+
+&lt;span class="nd"&gt;@app.callback&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;
+    &lt;span class="p"&gt;[&lt;/span&gt;
+        &lt;span class="n"&gt;Output&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'A'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'value'&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
+    &lt;span class="p"&gt;],&lt;/span&gt;
+    &lt;span class="p"&gt;[&lt;/span&gt;
+        &lt;span class="n"&gt;Input&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'B'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'value'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="p"&gt;]&lt;/span&gt;
+&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;copie_from_A_to_B&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;A_input&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="n"&gt;B_input&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;A_input&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;B_input&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;This callback listens to any change of input value inside the element of id A to affect it to the input value of the element of id B. This is done, again, dynamically.&lt;/p&gt;
+&lt;p&gt;Now I'll let you imagine what you can do with callbacks when you can handle many inputs to outputs and interact with other attributes than &lt;code&gt;value&lt;/code&gt;.
+You can learn more about callbacks &lt;a href="https://dash.plot.ly/getting-started-part-2"&gt;here&lt;/a&gt; or &lt;a href="https://www.youtube.com/watch?v=o5fgj1AIq4s"&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;hr/&gt;
+
+&lt;p&gt;Now back to our app !&lt;/p&gt;
+&lt;p&gt;Here's what it looks like. Each red arrow indicates the id of each html element.&lt;/p&gt;
+&lt;p align="center"&gt;
+    &lt;img src="./images/article_11/app_with_elements.png" style="margin:15px" width="70%"/&gt;
+&lt;/p&gt;
+
+&lt;p&gt;These elements obviously interact between each other. To materialize this, we defined two callback functions which can be visualized in the following graph.&lt;/p&gt;
+&lt;p align="center"&gt;
+    &lt;img src="./images/article_11/callbacks.png" style="margin:15px" width="70%"/&gt;
+&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Callback 1&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;At every change of the input value of the text area of id &lt;code&gt;review&lt;/code&gt;, the whole text review is sent through an http post request to the api route &lt;code&gt;POST /api/predict/&lt;/code&gt; to receive a sentiment score.
+Then this score is used by the callback to update the value (in percentage) inside the progress bar (proba), the length and the color of the progress bar again, the rating from 1 to 5 on the slider, as well as the state of the submit button (which is disabled by default when no text is present inside the text area.)
+What you'll have out of all this is a dynamic progress bar that fluctuates (with a color code) at every change of input as well as a suggested rating from 1 to 5 that follows the progress bar.&lt;/p&gt;
+&lt;p&gt;Here's how you'd do it in code:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nd"&gt;@app.callback&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;
+    &lt;span class="p"&gt;[&lt;/span&gt;
+        &lt;span class="n"&gt;Output&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'proba'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'children'&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
+        &lt;span class="n"&gt;Output&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'progress'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'value'&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
+        &lt;span class="n"&gt;Output&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'progress'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'color'&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
+        &lt;span class="n"&gt;Output&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'rating'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'value'&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
+        &lt;span class="n"&gt;Output&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'submit_button'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'disabled'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="p"&gt;],&lt;/span&gt;
+    &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;Input&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'review'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'value'&lt;/span&gt;&lt;span class="p"&gt;)]&lt;/span&gt;
+&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;update_proba&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;review&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;review&lt;/span&gt; &lt;span class="ow"&gt;is&lt;/span&gt; &lt;span class="ow"&gt;not&lt;/span&gt; &lt;span class="bp"&gt;None&lt;/span&gt; &lt;span class="ow"&gt;and&lt;/span&gt; &lt;span class="n"&gt;review&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;strip&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="s1"&gt;''&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="n"&gt;response&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;requests&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;post&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;
+            &lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="s2"&gt;"{config.API_URL}/predict"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s1"&gt;'review'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;review&lt;/span&gt;&lt;span class="p"&gt;})&lt;/span&gt;
+        &lt;span class="n"&gt;proba&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;response&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;json&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+        &lt;span class="n"&gt;proba&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;round&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;proba&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="mi"&gt;100&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="n"&gt;suggested_rating&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;min&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;int&lt;/span&gt;&lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="n"&gt;proba&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="mi"&gt;100&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="mi"&gt;5&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="n"&gt;text_proba&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="s2"&gt;"{proba}%"&lt;/span&gt;
+
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;proba&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;=&lt;/span&gt; &lt;span class="mi"&gt;67&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;text_proba&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;proba&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'success'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;suggested_rating&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="bp"&gt;False&lt;/span&gt;
+        &lt;span class="k"&gt;elif&lt;/span&gt; &lt;span class="mi"&gt;33&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt; &lt;span class="n"&gt;proba&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt; &lt;span class="mi"&gt;67&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;text_proba&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;proba&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'warning'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;suggested_rating&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="bp"&gt;False&lt;/span&gt;
+        &lt;span class="k"&gt;elif&lt;/span&gt; &lt;span class="n"&gt;proba&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;=&lt;/span&gt; &lt;span class="mi"&gt;33&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;text_proba&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;proba&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'danger'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;suggested_rating&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="bp"&gt;False&lt;/span&gt;
+    &lt;span class="k"&gt;else&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="bp"&gt;True&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;strong&gt;Callback 2&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;This callback does two things. &lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;When the &lt;code&gt;submit_button&lt;/code&gt; is clicked, it inserts a row in the database (through the api). The row contains the current data of the brand being reviewed (brand name, review, sentiment, etc) as well as the user agent and the user ip.
+Then it randomly changes the brand by switching the name, the logo and the url, and resetting the review textarea.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;You can also change the brand without submitting the review to the database, by clicking on the &lt;code&gt;switch_button&lt;/code&gt; instead.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Here's the code:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nd"&gt;@app.callback&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;
+    &lt;span class="p"&gt;[&lt;/span&gt;
+        &lt;span class="n"&gt;Output&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'company_logo'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'src'&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
+        &lt;span class="n"&gt;Output&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'company_name'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'children'&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
+        &lt;span class="n"&gt;Output&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'review'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'value'&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
+        &lt;span class="n"&gt;Output&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'company_link'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'href'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="p"&gt;],&lt;/span&gt;
+    &lt;span class="p"&gt;[&lt;/span&gt;
+        &lt;span class="n"&gt;Input&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'submit_button'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'n_clicks_timestamp'&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
+        &lt;span class="n"&gt;Input&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'switch_button'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'n_clicks_timestamp'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="p"&gt;],&lt;/span&gt;
+    &lt;span class="p"&gt;[&lt;/span&gt;
+        &lt;span class="n"&gt;State&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'review'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'value'&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
+        &lt;span class="n"&gt;State&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'progress'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'value'&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
+        &lt;span class="n"&gt;State&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'rating'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'value'&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
+        &lt;span class="n"&gt;State&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'company_name'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'children'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="p"&gt;]&lt;/span&gt;
+&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;change_brand&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;submit_click_ts&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;another_brand_click_ts&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;review_text&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;score&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;rating&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;brand_name&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;submit_click_ts&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;another_brand_click_ts&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="n"&gt;sentiment_score&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;float&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;score&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="mi"&gt;100&lt;/span&gt;
+        &lt;span class="n"&gt;ip_address&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;remote_addr&lt;/span&gt;
+        &lt;span class="n"&gt;user_agent&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;headers&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'User-Agent'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="n"&gt;response&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;requests&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;post&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;
+            &lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="s2"&gt;"{config.API_URL}/review"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+            &lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;
+                &lt;span class="s1"&gt;'review'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;review_text&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                &lt;span class="s1"&gt;'rating'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;rating&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                &lt;span class="s1"&gt;'suggested_rating'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="nb"&gt;min&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;int&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;sentiment_score&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="mi"&gt;5&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
+                &lt;span class="s1"&gt;'sentiment_score'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;sentiment_score&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                &lt;span class="s1"&gt;'brand'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;brand_name&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                &lt;span class="s1"&gt;'user_agent'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;user_agent&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                &lt;span class="s1"&gt;'ip_address'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;ip_address&lt;/span&gt;
+            &lt;span class="p"&gt;}&lt;/span&gt;
+        &lt;span class="p"&gt;)&lt;/span&gt;
+
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;response&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ok&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;"Review Saved"&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="k"&gt;else&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;"Error Saving Review"&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+    &lt;span class="n"&gt;random_company&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;companies&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sample&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;to_dict&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;orient&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;"records"&lt;/span&gt;&lt;span class="p"&gt;)[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+
+    &lt;span class="n"&gt;company_logo_url&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;random_company&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'company_logo'&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="ow"&gt;not&lt;/span&gt; &lt;span class="n"&gt;company_logo_url&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;startswith&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'http'&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="n"&gt;company_logo_url&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;'https://'&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;company_logo_url&lt;/span&gt;
+
+    &lt;span class="n"&gt;company_name&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;random_company&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'company_name'&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="n"&gt;company_website&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;random_company&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'company_website'&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;company_logo_url&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;company_name&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;''&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;company_website&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;We'll skip the definition of the dash app layout. You can check it directly from the source code on the repo. &lt;/p&gt;
+&lt;p&gt;If you have any question you can ask it, as always, in the comment section below ⬇.&lt;/p&gt;
+&lt;h2&gt;4 - Dockerizing the application with Docker Compose 🐳&lt;/h2&gt;
+&lt;p&gt;Now that we have built our app, we're going to deploy it. But it's actually easier said than done. Why?&lt;/p&gt;
+&lt;p&gt;Well, installing all our dependencies (Flask, Peewee, PyTorch, and so on...) can be tedious, and this process can differ based on the host's OS (yours or any other cloud instance's). We also need to install a PostgreSQL database, wich can be laborious as well. Not to mention the services that you have to manually create to run all the processes.&lt;/p&gt;
+&lt;p&gt;Wouldn't it be nice to have a tool that takes care of all this? Here is where &lt;a href="https://www.docker.com/"&gt;Docker&lt;/a&gt; comes in.&lt;/p&gt;
+&lt;p align="center" style="margin: 50px"&gt;
+    &lt;img src="./images/article_11/docker-logo.svg" style="margin:15px" width="30%"/&gt;
+&lt;/p&gt;
+
+&lt;p&gt;Docker is a popular tool to make it easier to build, deploy and run applications using containers. Containers allow us to package all the things that our application needs like such as libraries and other dependencies and ship it all as a single package. In this way, &lt;strong&gt;our application can be run on any machine and have the same behavior&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;Docker also provides a great tool to manage multi-containers applications: &lt;strong&gt;docker-compose&lt;/strong&gt;.
+With Compose, you use a YAML file to configure your application’s services. Then, with a single command, you create and start all the services from your configuration.&lt;/p&gt;
+&lt;p&gt;Here is an example of a simple Docker Compose that runs two services (&lt;code&gt;web&lt;/code&gt; and &lt;code&gt;redis&lt;/code&gt;):&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;version: '3'
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+  redis:
+    image: "redis:alpine"
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;To learn more about Docker and Docker Compose, have a look at this &lt;a href="https://docs.docker.com/compose/gettingstarted/"&gt;great tutorial&lt;/a&gt;&lt;/p&gt;
+&lt;hr/&gt;
+
+&lt;p&gt;Let's see now how we dockerized our app.&lt;/p&gt;
+&lt;p&gt;First of all, we separated our project in three containers, each one being responsible for one of the app's services &lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;db&lt;/code&gt;&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;api&lt;/code&gt;&lt;/strong&gt; &lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;dash&lt;/code&gt;&lt;/strong&gt; &lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;To manage these containers we'll use, as you expect, Docker Compose.&lt;/p&gt;
+&lt;p&gt;Here's our docker-compose.yml file, located at the root of our project:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;version: '3'
+services:
+  db:
+    image: postgres
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - ~/pgdata:/var/lib/postgresql/data
+    restart: always
+  api:
+    build:
+      context: src/api
+      dockerfile: Dockerfile
+    environment:
+      - ENVIRONMENT=prod
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    depends_on:
+      - db
+    restart: always
+  dash:
+    build:
+      context: src/dash
+      dockerfile: Dockerfile
+    ports:
+      - "8050:8050"
+    environment:
+      - ENVIRONMENT=prod
+      - API_URL=http://api:5000/api
+    depends_on:
+      - api
+    restart: always
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Let's have a closer look at our services. 
+- &lt;strong&gt;&lt;code&gt;db&lt;/code&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;To manage the database service, docker-compose first pulls an official image from the &lt;a href="https://hub.docker.com/_/postgres"&gt;postgres dockerhub repository&lt;/a&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+  &lt;span class="n"&gt;image&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;postgres&lt;/span&gt; &lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="n"&gt;official&lt;/span&gt; &lt;span class="n"&gt;postgres&lt;/span&gt; &lt;span class="n"&gt;image&lt;/span&gt; 
+  &lt;span class="n"&gt;environment&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+    &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;POSTGRES_DB&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;postgres&lt;/span&gt;
+    &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;POSTGRES_USER&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;postgres&lt;/span&gt;
+    &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;POSTGRES_PASSWORD&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;password&lt;/span&gt;
+  &lt;span class="n"&gt;volumes&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+    &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="o"&gt;~/&lt;/span&gt;&lt;span class="n"&gt;pgdata&lt;/span&gt;&lt;span class="o"&gt;:/&lt;/span&gt;&lt;span class="n"&gt;var&lt;/span&gt;&lt;span class="sr"&gt;/lib/postgresql/&lt;/span&gt;&lt;span class="n"&gt;data&lt;/span&gt;
+  &lt;span class="n"&gt;restart&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;always&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;It then passes connection information to the container as environment variables, and maps the &lt;code&gt;/var/lib/postgresql/data&lt;/code&gt; directory of the container to the &lt;code&gt;~/pgdata&lt;/code&gt; directory of the host. This allows data persistence.&lt;/p&gt;
+&lt;p&gt;You can also notice the &lt;code&gt;restart: always&lt;/code&gt; policy, which ensures that our service will restart if it fails or if the host reboots.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;api&lt;/code&gt;&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;To manage the api service, docker-compose first launches a build of a custom image based on the Dockerfile located at &lt;code&gt;src/api&lt;/code&gt;.
+Then it passes environment variables for the database connection.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;api&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+  &lt;span class="n"&gt;build&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+    &lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;src&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;api&lt;/span&gt;
+    &lt;span class="n"&gt;dockerfile&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;Dockerfile&lt;/span&gt;
+  &lt;span class="n"&gt;environment&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+    &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;ENVIRONMENT&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;prod&lt;/span&gt;
+    &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;POSTGRES_HOST&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;db&lt;/span&gt;
+    &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;POSTGRES_PORT&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;5432&lt;/span&gt;
+    &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;POSTGRES_DB&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;postgres&lt;/span&gt;
+    &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;POSTGRES_USER&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;postgres&lt;/span&gt;
+    &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;POSTGRES_PASSWORD&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;password&lt;/span&gt;
+  &lt;span class="n"&gt;depends_on&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+    &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;db&lt;/span&gt; 
+  &lt;span class="n"&gt;restart&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;always&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;This service depends on the database service, that has to start before the API. This is ensured by the &lt;code&gt;depends_on&lt;/code&gt; clause:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;depends_on:
+  - db
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Now here's the Dockerfile to build the API docker image.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;FROM&lt;/span&gt;&lt;span class="s"&gt; python:3&lt;/span&gt;
+
+&lt;span class="k"&gt;ADD&lt;/span&gt; requirements.txt /app/
+&lt;span class="k"&gt;WORKDIR&lt;/span&gt;&lt;span class="s"&gt; /app&lt;/span&gt;
+
+&lt;span class="k"&gt;RUN&lt;/span&gt; pip install -r requirements.txt
+
+&lt;span class="k"&gt;ADD&lt;/span&gt; . /app
+
+&lt;span class="k"&gt;EXPOSE&lt;/span&gt;&lt;span class="s"&gt; 5000&lt;/span&gt;
+
+&lt;span class="k"&gt;CMD&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s2"&gt;"gunicorn"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s2"&gt;"-b"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s2"&gt;"0.0.0.0:5000"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s2"&gt;"app:app"&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;When running this file, docker will pull an official python image from Dockerhub, copy a requirements.txt to /app/, install the dependencies using pip, expose a port and run a web server.&lt;/p&gt;
+&lt;p&gt;Notice that we are using &lt;a href="https://gunicorn.org/"&gt;gunicorn&lt;/a&gt; instead of just launching the flask app using the &lt;code&gt;python app.py&lt;/code&gt; command.&lt;/p&gt;
+&lt;p&gt;Indeed, Falsk's built-in server is a development only server, and should not be used in production.&lt;/p&gt;
+&lt;p&gt;From the official &lt;a href="https://flask.palletsprojects.com/en/1.1.x/tutorial/deploy/"&gt;deployment documentation&lt;/a&gt;:&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;When running publicly rather than in development, you should not use the built-in development server (flask run). The development server is provided by Werkzeug for convenience, but is not designed to be particularly efficient, stable, or secure.&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;You can use any python production web server (tornado, gunicorn, ...) instead.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;dash&lt;/code&gt;&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;For the dash service, similarly to what has been done for the API, docker-compose launches a build of a custom image based on the Dockerfile located at &lt;code&gt;src/dash&lt;/code&gt;.
+Then it passes two environment variables. One of them is &lt;code&gt;API_URL&lt;/code&gt;.
+&lt;strong&gt;Notice that the hostname of &lt;code&gt;API_URL&lt;/code&gt; is the name of the &lt;code&gt;api&lt;/code&gt; service&lt;/strong&gt;. &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;dash&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+  &lt;span class="n"&gt;build&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+    &lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;src&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;dash&lt;/span&gt;
+    &lt;span class="n"&gt;dockerfile&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;Dockerfile&lt;/span&gt;
+  &lt;span class="n"&gt;ports&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+    &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="s2"&gt;"8050:8050"&lt;/span&gt;
+  &lt;span class="n"&gt;environment&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+    &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;ENVIRONMENT&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;prod&lt;/span&gt;
+    &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;API_URL&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;http&lt;/span&gt;&lt;span class="o"&gt;://&lt;/span&gt;&lt;span class="n"&gt;api&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;5000&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;api&lt;/span&gt;
+  &lt;span class="n"&gt;depends_on&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+    &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;api&lt;/span&gt;
+  &lt;span class="n"&gt;restart&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;always&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;To build the image, Docker will be running this file, which is basically the same as the previous one, except for the port.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;FROM&lt;/span&gt;&lt;span class="s"&gt; python:3&lt;/span&gt;
+
+&lt;span class="k"&gt;ADD&lt;/span&gt; requirements.txt /app/
+&lt;span class="k"&gt;WORKDIR&lt;/span&gt;&lt;span class="s"&gt; /app&lt;/span&gt;
+&lt;span class="k"&gt;RUN&lt;/span&gt; pip install -r requirements.txt
+
+&lt;span class="k"&gt;ADD&lt;/span&gt; . /app
+
+&lt;span class="k"&gt;EXPOSE&lt;/span&gt;&lt;span class="s"&gt; 8050&lt;/span&gt;
+
+&lt;span class="k"&gt;CMD&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s2"&gt;"gunicorn"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s2"&gt;"-b"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s2"&gt;"0.0.0.0:8050"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s2"&gt;"app:app.server"&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;5 - Deploying to AWS: Demo time 💻&lt;/h2&gt;
+&lt;p&gt;Let's first have a look at the global deployment architecture we designed: &lt;/p&gt;
+&lt;p align="center"&gt;
+    &lt;img src="./images/article_11/deployment-schema.png" style="margin:15px" width="80%"/&gt;
+&lt;/p&gt;
+
+&lt;p&gt;Here's the workflow:&lt;/p&gt;
+&lt;p&gt;When a user goes to &lt;a href="http://reviews.ai2prod.com"&gt;reviews.ai2prod.com&lt;/a&gt; from his browser, a request is sent to the DNS server which in turn redirects it to a load balancer.
+The load balancer redirects its request to an EC2 instance inside a target group.
+Finally, when docker-compose receives the request on port 8050, it redirects it to the Dash container.&lt;/p&gt;
+&lt;p&gt;So how did we build this workflow? Below are the main steps.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Deploy the app on an EC2 instance&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;The very first step to our deployment journey is launching an instance to deploy our app on.&lt;/p&gt;
+&lt;p&gt;To do this, go to the EC2 page of the &lt;a href="https://console.aws.amazon.com/ec2"&gt;AWS Console&lt;/a&gt;, and click on the "launch Instance".&lt;/p&gt;
+&lt;p&gt;You will need to select an AMI. We used Amazon Linux 2, but you can choose any Linux based instance.&lt;/p&gt;
+&lt;p align="center"&gt;
+    &lt;img src="./images/article_11/screenshot-launch-ec2-instance.png" style="margin:15px" width="80%"/&gt;
+&lt;/p&gt;
+
+&lt;p&gt;You will then need to choose an instance type. We went for a t3a.large but you could probably select a smaller one.&lt;/p&gt;
+&lt;p&gt;You will also need to configure a security group so that you can ssh into your instance, and access the 8050 port on which our dash app runs.
+This is done as follows:&lt;/p&gt;
+&lt;p align="center"&gt;
+    &lt;img src="./images/article_11/screenshot-security-group.png" style="margin:15px" width="80%"/&gt;
+&lt;/p&gt;
+
+&lt;p&gt;You can finally launch the instance. If you need more explanations on how to launch an EC2 instance you can read &lt;a href="https://www.guru99.com/creating-amazon-ec2-instance.html"&gt;this tutorial&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Now that we have our instance, let's ssh into it:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;ssh -i path/to/key.pem ec2-user@public-ip-address
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;We can then install docker. Below are the installation instructions for Amazon Linux 2 instances. Please refer to the official Docker installation instructions for other OS.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;sudo yum update -y
+sudo amazon-linux-extras install docker
+sudo service docker start
+sudo usermod -a -G docker ec2-user
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;⚠️ You will need to log out and log back in. ⚠️&lt;/p&gt;
+&lt;p&gt;Then install docker compose:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;sudo curl -L "https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;And test the install&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ docker-compose --version
+docker-compose version &lt;span class="m"&gt;1&lt;/span&gt;.24.1, build 4667896b
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Then clone the git repository:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;sudo yum install git
+git clone https://github.com/MarwanDebbiche/post-tuto-deployment.git
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;And finally run the app:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;cd post-tuto-deployment
+docker-compose up --build -d
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Once it's running, you can access the dashboard from the browser by typing the following address:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;http://your-ec2-public-DNS:8050&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;We could stop here, but we wanted to use a cooler domain name, a subdomain for this app, and an SSL certificate. These are optional configuration steps, but they're recommended if you want a polished product.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Buy your own domain name&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;First, you will need to buy a cool domain name. You can choose any domain registrar, but using AWS &lt;a href="https://aws.amazon.com/route53"&gt;Route53&lt;/a&gt; will make things easier as we are deploying the app on AWS.&lt;/p&gt;
+&lt;p&gt;Go the Route53 page of the AWS console, and click on "Domain registration".&lt;/p&gt;
+&lt;p align="center"&gt;
+    &lt;img src="./images/article_11/screenshot-route53-homepage.png" style="margin:15px" width="80%"/&gt;
+&lt;/p&gt;
+
+&lt;p&gt;Then, follow the domain purchase process which is quite straightforward. The hardest step is finding an available domain name that you like.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Request an SSL certificate using ACM&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Once you have purchased your own domain name on Route53, you can easily request an SSL certificate using &lt;a href="https://aws.amazon.com/certificate-manager"&gt;AWS Certificate Manager&lt;/a&gt;.&lt;/p&gt;
+&lt;p align="center"&gt;
+    &lt;img src="./images/article_11/screenshot-request-certificate-acm.png" style="margin:15px" width="80%"/&gt;
+&lt;/p&gt;
+
+&lt;p&gt;You will need to enter the list of subdomains that you wish to protect with the certificate (for exemple &lt;code&gt;mycooldomain.com&lt;/code&gt; and &lt;code&gt;*.mycooldomain.com&lt;/code&gt;).&lt;/p&gt;
+&lt;p&gt;Then, if you registered your domain on Route53, the remainder of the process is quite simple:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Choose DNS Validation&lt;/li&gt;
+&lt;li&gt;Confirm&lt;/li&gt;
+&lt;li&gt;Then AWS will offer to automatically create a CNAME record in Route53 to validate the certificate.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p align="center"&gt;
+    &lt;img src="./images/article_11/screenshot-acm-create-record.png" style="margin:15px" width="80%"/&gt;
+&lt;/p&gt;
+
+&lt;p&gt;According to the &lt;a href="https://docs.aws.amazon.com/acm/latest/userguide/gs-acm-validate-dns.html"&gt;documentation&lt;/a&gt;, it can then take a few hours for the certificate to be issued. Although from our own experience, it usually doesn't take longer than 30 minutes.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Put the app behind an Application Load Balancer&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Load balancers are, as their names suggest, usually used to balance the load between several instances. However, in our case, we deployed our app to one instance only, so we didn't need any load balancing. In fact, we used an &lt;a href="https://docs.aws.amazon.com/elasticloadbalancing/latest/application/introduction.html"&gt;AWS ALB&lt;/a&gt; (Application Load Balancer) as a reverse proxy, to route the traffic from HTTPS and HTTP ports (443 and 80 respectively) to our Dash app port (8050).&lt;/p&gt;
+&lt;p&gt;To create and configure your Application Load Balancer go to the &lt;a href="https://console.aws.amazon.com/ec2/home#LoadBalancers"&gt;Load Balancing tab&lt;/a&gt; of the EC2 page in the AWS console and click on the "Create Load Balancer" button:&lt;/p&gt;
+&lt;p align="center"&gt;
+    &lt;img src="./images/article_11/screenshot-create-a-load-balancer.png" style="margin:15px" width="80%"/&gt;
+&lt;/p&gt;
+
+&lt;p&gt;Then you will need to select the type of load balancer you want. We won't go into too much details here, but for most use-cases you will need an Application Load Balancer.&lt;/p&gt;
+&lt;p align="center"&gt;
+    &lt;img src="./images/article_11/screenshot-select-load-balancer-type.png" style="margin:15px" width="80%"/&gt;
+&lt;/p&gt;
+
+&lt;p&gt;Then you will have to:
+- Give a name the load balancer
+- Select the "internet-facing" scheme
+- Add listeners for both HTTP and HTTPS
+- Select the Availability Zones to enable for your load balancer (if in doubt you can select them all)&lt;/p&gt;
+&lt;p&gt;As you added an HTTPS listener, you will be asked to select or import a certificate. Select the one you requested using ACM:&lt;/p&gt;
+&lt;p align="center"&gt;
+    &lt;img src="./images/article_11/screenshot-load-balancer-select-certificate.png" style="margin:15px" width="80%"/&gt;
+&lt;/p&gt;
+
+&lt;p&gt;Then you will need to configure the security groups for your ALB. Create a new security group for your load balancer, with ports 80 (HTTP) and 443 (HTTPS) opened.&lt;/p&gt;
+&lt;p&gt;Once this is done, remains the final step: creating your target group for your load balancer.&lt;/p&gt;
+&lt;p&gt;To do that you will need to specify the port on which the traffic from the load balancer should be routed. In our case this is our Dash app's port, 8050:&lt;/p&gt;
+&lt;p align="center"&gt;
+    &lt;img src="./images/article_11/screenshot-target-group-configure.png" style="margin:15px" width="80%"/&gt;
+&lt;/p&gt;
+
+&lt;p&gt;Now you can add the EC2 instance on which we deployed the app as a registered target for the group:&lt;/p&gt;
+&lt;p align="center"&gt;
+    &lt;img src="./images/article_11/screenshot-target-group-add-instance.png" style="margin:15px" width="100%"/&gt;
+&lt;/p&gt;
+
+&lt;p&gt;And, here it is, you can finally create your load balancer.&lt;/p&gt;
+&lt;p&gt;You can test it by goint to your-load-balancer-dns-name-amazonaws.com. you should see your app!&lt;/p&gt;
+&lt;p&gt;BUT, despite the fact that we have used the certificate issued by ACM, it still says that the connection is not secure!&lt;/p&gt;
+&lt;p&gt;Don't worry, that's perfectly fine. If you remember correctly, the certificate we requested protects &lt;code&gt;mycooldomain.com&lt;/code&gt;, not &lt;code&gt;your-load-balancer-dns-name-amazonaws.com&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;So we need to create a record set in Route53 to map our domain name to our load balancer. We will see how to do that very soon. But before that, we will need to configure one last thing in our ALB.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;TBC with HTTP rule : redirection to HTTPS&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Create a record set in Route53&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;A Route53 record set is basically a mapping between a domain (or subdomain) and either an IP adress or an AWS asset. In our case, our Application Load Balancer. This record will then be propagated in the &lt;a href="https://en.wikipedia.org/wiki/Domain_Name_System"&gt;Domain Name System&lt;/a&gt;, so that a user can access our app by typing the URL.&lt;/p&gt;
+&lt;p&gt;To create a record set go to your hosted zone's page in Route53 and click on the &lt;code&gt;Create Record Set&lt;/code&gt; button:&lt;/p&gt;
+&lt;p align="center"&gt;
+    &lt;img src="./images/article_11/route53-create-a-record-set.png" width="80%"/&gt;
+&lt;/p&gt;
+
+&lt;p&gt;You will have to:
+- Type the subdomain name, or leave it empty if you wish to create a record set for the naked domain
+- Select "Yes" for the &lt;code&gt;Alias&lt;/code&gt; option
+- You should be able to select your application load balancer in the &lt;code&gt;Alias Target&lt;/code&gt; list&lt;/p&gt;
+&lt;p align="center"&gt;
+    &lt;img src="./images/article_11/route53-configure-a-record.png" width="30%"/&gt;
+&lt;/p&gt;
+
+&lt;p&gt;And you will soon be able to access the app using your custom domain adress (DNS propacation might usually takes about an hour).&lt;/p&gt;
+&lt;p&gt;One last thing that you might want to do is to either redirect traffic from &lt;code&gt;yourcooldomain.com&lt;/code&gt; to &lt;code&gt;www.yourcooldomain.com&lt;/code&gt;, or the other way around. We chose to redirect &lt;code&gt;reviews.ai2prod.com&lt;/code&gt; to &lt;a href="http://www.reviews.ai2prod.com"&gt;www.reviews.ai2prod.com&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;We won't go into much details here but here is how to do that:
+- Create a new application load balancer. It will only be in charge of redirecting to your app's main url so you don't need to register any instance in its target group.
+- Modify HTTP and HTTPS listeners to redirect to your app's main url
+- Create a record set in Route53 to map the subdomain you wish to redirect your traffic from, to this new ALB&lt;/p&gt;
+&lt;p&gt;Here is a schema reprensenting how everything works in the end:&lt;/p&gt;
+&lt;p align="center"&gt;
+    &lt;img src="/images/article_11/schema-dns-load-balancer.png" style="margin:15px" width="80%"/&gt;
+&lt;/p&gt;
+
+&lt;h2&gt;6 - Next steps 🛠&lt;/h2&gt;
+&lt;p&gt;When building this application, we thought of many improvements that we hadn't time to successfully add.&lt;/p&gt;
+&lt;p&gt;In particular we wanted to:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Add server-side pagination for Admin Page and &lt;code&gt;GET /api/reviews&lt;/code&gt; route.&lt;/li&gt;
+&lt;li&gt;Protect admin page with authentication.&lt;/li&gt;
+&lt;li&gt;Either use &lt;a href="https://kubernetes.io"&gt;Kubernetes&lt;/a&gt; or &lt;a href="https://aws.amazon.com/ecs"&gt;Amazon ECS&lt;/a&gt; to deploy the app on a cluster of containers, instead of on one single EC2 instance.&lt;/li&gt;
+&lt;li&gt;Use continuous deployment with &lt;a href="https://travis-ci.org"&gt;Travis CI&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Use a managed service such as &lt;a href="https://aws.amazon.com/rds/"&gt;RDD&lt;/a&gt; for the database&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;7 - Conclusion  👋&lt;/h2&gt;
+&lt;p&gt;Throughout this tutorial you learned how to build a machine learning application from scratch by going through the data collection and scraping, model training, web app development, docker and deployment.&lt;/p&gt;
+&lt;p&gt;Every block of this app is independently packaged and easily reusable for other similar use cases.&lt;/p&gt;
+&lt;p&gt;We're aware that many improvements could be added to this project and this is one of the reason we're releasing it.
+So if you think of any feature that could be added don't hesitate to fork the repo and create a pull request.
+If you're also facing an issue running the app do not hesitate to &lt;a href="https://github.com/MarwanDebbiche/post-tuto-deployment/issues"&gt;report it&lt;/a&gt;. We'll try to fix the problem as soon as possible.&lt;/p&gt;
+&lt;p&gt;That's all folks! 🎉 &lt;/p&gt;</content><category term="Docker"></category><category term="AWS"></category><category term="deployment"></category><category term="Character Level CNN"></category><category term="Sentiment Analysis"></category></entry></feed>

@@ -1,0 +1,604 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Ahmed BESBES - Data Science Portfolio - AutoML</title><link href="https://ahmedbesbes.com/" rel="alternate"></link><link href="https://ahmedbesbes.com/feeds/automl.atom.xml" rel="self"></link><id>https://ahmedbesbes.com/</id><updated>2019-10-08T18:31:00+02:00</updated><subtitle>Data scientist in the making</subtitle><entry><title>Introduction to AutoML with MLBox</title><link href="https://ahmedbesbes.com/introduction-to-automl-with-mlbox.html" rel="alternate"></link><published>2019-10-08T18:31:00+02:00</published><updated>2019-10-08T18:31:00+02:00</updated><author><name>Axel de Romblay</name></author><id>tag:ahmedbesbes.com,2019-10-08:/introduction-to-automl-with-mlbox.html</id><summary type="html">&lt;p&gt;Today's post is very special. It's written in collaboration with &lt;a href="https://www.linkedin.com/in/axel-de-romblay-6444a990/"&gt;Axel de Romblay&lt;/a&gt; the author of the MLBox Auto-ML package that has gained a lot of popularity these last years. &lt;br&gt; If you haven't heard about this library, go and check it out on &lt;a href="https://github.com/AxeldeRomblay/MLBox"&gt;github&lt;/a&gt;: It encompasses interesting features, it's gaining in maturity and is now under active development. &lt;br&gt;  In this post, we'll show you how you can easily use it to train an automated machine learning pipeline for a classification problem. It'll start off by loading and cleaning the data, removing drift, launching a strong pipeline of accelerated optimization and generating predictions!&lt;img src="/images/article_10/stars.png"&gt; &lt;img src="/images/article_10/mlbox.png"&gt;&lt;/p&gt;</summary><content type="html">&lt;/head&gt;&lt;body&gt;&lt;p&gt;
+&lt;/p&gt;&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;Today's post is very special. It's written in collaboration with &lt;a href="https://www.linkedin.com/in/axel-de-romblay-6444a990/"&gt;Axel de Romblay&lt;/a&gt; the author of the MLBox Auto-ML package that has gained a lot of popularity these last years.&lt;/p&gt;
+&lt;p&gt;If you haven't heard about this library, go and check it out on &lt;a href="https://github.com/AxeldeRomblay/MLBox"&gt;github&lt;/a&gt;: It encompasses interesting features, it's gaining in maturity and is now under active development.&lt;/p&gt;
+&lt;p&gt;&lt;img src="./images/article_10/stars.png"/&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src="./images/article_10/mlbox.png"/&gt;&lt;/p&gt;
+&lt;p&gt;In this post, we'll show you how you can easily use it to train an automated machine learning pipeline for a classification problem. It'll start off by loading and cleaning the data, removing drift, launching a strong pipeline of accelerated optimization and generating predictions.&lt;/p&gt;
+&lt;h1 id="0---Introduction-to-Auto-ML"&gt;0 - Introduction to Auto-ML&lt;a class="anchor-link" href="#0---Introduction-to-Auto-ML"&gt;¶&lt;/a&gt;&lt;/h1&gt;&lt;p&gt;MLBox has been presented to many machine learning Meetups. You can check one of the slides here. It's a good start to have an overview of the library of more generally of the AutoML concept.&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+ 
+
+&lt;p&gt;&lt;/p&gt;
+&lt;div style="text-align:center"&gt;
+    &lt;iframe allowfullscreen="" frameborder="0" height="485" marginheight="0" marginwidth="0" scrolling="no" src="//www.slideshare.net/slideshow/embed_code/key/9NqV164Uhv4NZH" style="border:1px solid #CCC; border-width:1px; margin-bottom:5px; max-width: 100%;" width="700"&gt; &lt;/iframe&gt; &lt;div style="margin-bottom:5px"&gt; &lt;strong&gt; &lt;a href="//www.slideshare.net/AxeldeRomblay/mlbox-082-178177773" target="_blank" title="MLBox 0.8.2 "&gt;MLBox 0.8.2 &lt;/a&gt; &lt;/strong&gt; de &lt;strong&gt;&lt;a href="//www.slideshare.net/AxeldeRomblay" target="_blank"&gt;Axel de Romblay&lt;/a&gt;&lt;/strong&gt; &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+&lt;/p&gt;&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h1 id="1---Downloading-the-train-and-test-datasets"&gt;1 - Downloading the train and test datasets&lt;a class="anchor-link" href="#1---Downloading-the-train-and-test-datasets"&gt;¶&lt;/a&gt;&lt;/h1&gt;&lt;p&gt;For the purpose of this notebook, we'll be solving the famous Titanic Kaggle &lt;a href="https://www.kaggle.com/c/titanic/"&gt;challenge&lt;/a&gt; which consists in predicting the survival of passengers based on their attributes (Sex, Age, Name, etc).&lt;/p&gt;
+&lt;p&gt;If you're not familiar with this competition you can check this &lt;a href="https://ahmedbesbes.com/how-to-score-08134-in-titanic-kaggle-challenge.html"&gt;article&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Let's now download the data:&lt;/p&gt;
+&lt;h3 id="From-Kaggle-if-you-have-an-account"&gt;From Kaggle if you have an account&lt;a class="anchor-link" href="#From-Kaggle-if-you-have-an-account"&gt;¶&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;If you have a Kaggle account you can generate an API token right here on your profile page:&lt;/p&gt;
+&lt;p&gt;&lt;img src="./images/article_10/kaggle-api-key.png" width="75%"/&gt;&lt;/p&gt;
+&lt;p&gt;Once the API token is generated, you'll have a kaggle.json downloaded on your system that contains your usename and key.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;If you're on Unix-based OS, place this file in: ~/.kaggle/ and then&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;chmod &lt;span class="m"&gt;600&lt;/span&gt; ~/.kaggle/kaggle.json
+&lt;/pre&gt;&lt;/div&gt;
+&lt;ul&gt;
+&lt;li&gt;If you're on a Windows machine:&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nb"&gt;export&lt;/span&gt; &lt;span class="nv"&gt;KAGGLE_USERNAME&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&amp;lt;your-username&amp;gt;
+&lt;span class="nb"&gt;export&lt;/span&gt; &lt;span class="nv"&gt;KAGGLE_KEY&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&amp;lt;your-key&amp;gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;h3 id="From-the-internet:"&gt;From the internet:&lt;a class="anchor-link" href="#From-the-internet:"&gt;¶&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Make sure you have wget installed: &lt;code&gt;pip install wget&lt;/code&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;wget&lt;/span&gt;
+
+&lt;span class="n"&gt;train_url&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;'https://storage.googleapis.com/kaggle-competitions-data/kaggle/3136/train.csv?GoogleAccessId=web-data@kaggle-161607.iam.gserviceaccount.com&amp;amp;Expires=1570183347&amp;amp;Signature=O7hakdmzfjCnK6so6Yj%2B4TEscq4YD9smNLasKOcBK4k2A737DH3gwcDU5LMZwLH20rjrhrk5vKueJh5EDM8IX5X0l0rDZ4f%2BosbFU&lt;/span&gt;&lt;span class="si"&gt;%2F&lt;/span&gt;&lt;span class="s1"&gt;Hig5s5MetsPMYDqEZyYRq6BRWd4kazaeHnoEjiDnvmHf2a0eQ9&lt;/span&gt;&lt;span class="si"&gt;%2F&lt;/span&gt;&lt;span class="s1"&gt;C7A9TX72MwVi50MFyD&lt;/span&gt;&lt;span class="si"&gt;%2F&lt;/span&gt;&lt;span class="s1"&gt;3MXjE7NX0ciXMc1RQVV5fpr5u1qJ98yBaJZS1CWWyXx5D1Q3U5VfvcIPGds%2B3XIYko9MIbd4wnk2g4K3rJijAyTnjoi1sVhyyms0buyxXNQH4eQ3OdUW6EbB1NzHv9F93ZTMUKoY76hAlKNdpFCE&lt;/span&gt;&lt;span class="si"&gt;%2F&lt;/span&gt;&lt;span class="s1"&gt;pD8YW22hfHEiifUhipmtA%3D%3D'&lt;/span&gt;
+&lt;span class="n"&gt;train_file&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;wget&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;download&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;train_url&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="n"&gt;test_url&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;'https://storage.googleapis.com/kaggle-competitions-data/kaggle/3136/test.csv?GoogleAccessId=web-data@kaggle-161607.iam.gserviceaccount.com&amp;amp;Expires=1570183224&amp;amp;Signature=ppvKN7j%2BdPC5z5G4HARm&lt;/span&gt;&lt;span class="si"&gt;%2F&lt;/span&gt;&lt;span class="s1"&gt;aLpkBIfF&lt;/span&gt;&lt;span class="si"&gt;%2F&lt;/span&gt;&lt;span class="s1"&gt;1%2BbFR9Zwcy81aY&lt;/span&gt;&lt;span class="si"&gt;%2F&lt;/span&gt;&lt;span class="s1"&gt;TPtoKS8ZZDa2RzmcFfa2C4nm7FGLM%2B70cl742KUjWTDXqEWSyYdvIXabP82LRXJ6UGKGixmoGLcAaNhKT&lt;/span&gt;&lt;span class="si"&gt;%2F&lt;/span&gt;&lt;span class="s1"&gt;CQrmYmhcrrUoy%2BFj6Ik%2BHtg9vWKaAG6zZAGP3l1uCRQSMrThKBkV6nO1cpeJ&lt;/span&gt;&lt;span class="si"&gt;%2F&lt;/span&gt;&lt;span class="s1"&gt;8JoeB2DBNdjL&lt;/span&gt;&lt;span class="si"&gt;%2F&lt;/span&gt;&lt;span class="s1"&gt;noT7kj2LS2U1pyZjhD3HeIwpBCkbZ6Cdt%2BrXT10YYkrc7tk%2BWHIsIwINg4oC681YGwL99N0IQAkNbxffx4cU7tWwZAHZ6JIdJzohsN8b6QifAMnV5oqc21ad32I5LAz5g9p9PlSgLCzmw%3D%3D'&lt;/span&gt;
+&lt;span class="n"&gt;test_file&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;wget&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;download&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;test_url&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;Then place train.csv and test.csv in &lt;code&gt;data&lt;/code&gt; folder at the root of the project.&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h1 id="2---Environment-setup-and-installing-MLBox-from-PyPI"&gt;2 - Environment setup and installing MLBox from PyPI&lt;a class="anchor-link" href="#2---Environment-setup-and-installing-MLBox-from-PyPI"&gt;¶&lt;/a&gt;&lt;/h1&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;Creating a conda virtual environment is recommended because MLBox encompasses several dependencies that might mess with your current libraries. Having a clean virtual environment is the right solution and if anything goes wrong you can remove it without impacting your system.&lt;/p&gt;
+&lt;p&gt;You can create it using conda or pyenv. I'm a conda user so I'll use conda.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;conda create -n automl &lt;span class="nv"&gt;python&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;3&lt;/span&gt;.7
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;This creates an environment named &lt;strong&gt;automl&lt;/strong&gt; that has python 3.7 preconfigured on it.&lt;/p&gt;
+&lt;p&gt;If you're on OSX like me, you'll have to install &lt;strong&gt;OpenMP&lt;/strong&gt; (Open Multi-Processing), an efficient implementation of multithreading, via brew:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;base&lt;span class="o"&gt;)&lt;/span&gt; brew install libomp
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;Now activate automl and install MLBox directly from PyPI:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;base&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="nb"&gt;source&lt;/span&gt; activate automl
+&lt;span class="o"&gt;(&lt;/span&gt;automl&lt;span class="o"&gt;)&lt;/span&gt; pip install mlbox
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;&lt;img src="./images/article_10/dependencies.png"/&gt;&lt;/p&gt;
+&lt;p&gt;As you see, mlbox has quite a lot of dependencies such as scikit-learn, pandas, etc. That's why we created an empty virtual environment.&lt;/p&gt;
+&lt;h3 id="[Optional]-:-accessing-the-automl-kernel-from-Jupyter."&gt;[Optional] : accessing the automl kernel from Jupyter.&lt;a class="anchor-link" href="#[Optional]-:-accessing-the-automl-kernel-from-Jupyter."&gt;¶&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;If you'd like to use jupyter notebook on this environment without activating it but by selecting the kernel only from the base jupyter dropdown list; you'll have to install &lt;strong&gt;ipykernel&lt;/strong&gt;:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;automl&lt;span class="o"&gt;)&lt;/span&gt; conda install ipykernel
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;&lt;img src="./images/article_10/ipykernel.png" width="50%"/&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Now you're good to go!&lt;/strong&gt;&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h1 id="3---Testing-MLBox:-from-data-ingestion-to-model-building"&gt;3 - Testing MLBox: from data ingestion to model building&lt;a class="anchor-link" href="#3---Testing-MLBox:-from-data-ingestion-to-model-building"&gt;¶&lt;/a&gt;&lt;/h1&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;Now we're going to test and run MLBox to quickly build a model to solve the Kaggle Titanic Challenge.&lt;/p&gt;
+&lt;p&gt;For more information about the documentation of the package and the API you can visit the following links:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The official repository: &lt;a href="https://github.com/AxeldeRomblay/MLBox"&gt;https://github.com/AxeldeRomblay/MLBox&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;The official documentation: &lt;a href="https://mlbox.readthedocs.io/en/latest/"&gt;https://mlbox.readthedocs.io/en/latest/&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h2 id="Importing-MLBox"&gt;Importing MLBox&lt;a class="anchor-link" href="#Importing-MLBox"&gt;¶&lt;/a&gt;&lt;/h2&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [1]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class="highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;%%&lt;/span&gt;&lt;span class="k"&gt;time&lt;/span&gt;
+
+from IPython.core.display import display, HTML
+display(HTML('&amp;lt;style&amp;gt;.prompt{width: 0px; min-width: 0px; visibility: collapse}&amp;lt;/style&amp;gt;'))
+
+import warnings
+warnings.filterwarnings("ignore")
+
+from mlbox.preprocessing.reader import Reader
+from mlbox.preprocessing.drift_thresholder import Drift_thresholder
+from mlbox.optimisation.optimiser import Optimiser 
+from mlbox.prediction.predictor import Predictor
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="output_wrapper"&gt;
+&lt;div class="output"&gt;
+
+
+&lt;div class="output_area"&gt;
+
+&lt;div class="prompt"&gt;&lt;/div&gt;
+
+
+
+&lt;div class="output_html rendered_html output_subarea"&gt;
+&lt;style&gt;.prompt{width: 0px; min-width: 0px; visibility: collapse}&lt;/style&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+
+&lt;div class="output_area"&gt;
+
+&lt;div class="prompt"&gt;&lt;/div&gt;
+
+
+&lt;div class="output_subarea output_stream output_stderr output_text"&gt;
+&lt;pre&gt;Using TensorFlow backend.
+&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="output_area"&gt;
+
+&lt;div class="prompt"&gt;&lt;/div&gt;
+
+
+&lt;div class="output_subarea output_stream output_stdout output_text"&gt;
+&lt;pre&gt;CPU times: user 2.42 s, sys: 740 ms, total: 3.16 s
+Wall time: 4.04 s
+&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h2 id="Inputs-to-MLBox"&gt;Inputs to MLBox&lt;a class="anchor-link" href="#Inputs-to-MLBox"&gt;¶&lt;/a&gt;&lt;/h2&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;If you're having a train and a test set like in any Kaggle competition, you can feed these two paths directly to MLBox as well as the target name.&lt;/p&gt;
+&lt;p&gt;Otherwise, if fed a train set only, MLBox creates a test set.&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [2]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class="highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;paths&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s2"&gt;"./data/train.csv"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s2"&gt;"./data/test.csv"&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; 
+&lt;span class="n"&gt;target_name&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;"Survived"&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h2 id="Reading-and-preprocessing"&gt;Reading and preprocessing&lt;a class="anchor-link" href="#Reading-and-preprocessing"&gt;¶&lt;/a&gt;&lt;/h2&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;The Reader class of MLBox is in charge of preparing the data.&lt;/p&gt;
+&lt;p&gt;It basically provides methods and utilities to:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Read in the data with the correct separator (csv, xls, json, and h5) and load it&lt;/li&gt;
+&lt;li&gt;Clean the data by: &lt;ul&gt;
+&lt;li&gt;deleting Unnamed columns&lt;/li&gt;
+&lt;li&gt;inferring column types (float, int, list)&lt;/li&gt;
+&lt;li&gt;processing dates and extracting relevant information from it: year, month, day, day_of_week, hour, etc.&lt;/li&gt;
+&lt;li&gt;removing duplicates&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;Prepare train and test splits&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;More information here: &lt;a href="https://mlbox.readthedocs.io/en/latest/features.html#mlbox.preprocessing.Reader"&gt;https://mlbox.readthedocs.io/en/latest/features.html#mlbox.preprocessing.Reader&lt;/a&gt;&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [ ]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class="highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;rd&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Reader&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;sep&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;","&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;df&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;rd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;train_test_split&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;paths&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;target_name&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;&lt;img src="./images/article_10/reading_files.png"/&gt;&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;When this function is done running, it creates a folder named &lt;code&gt;save&lt;/code&gt; where it dumps the target encoder for later use.&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [ ]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class="highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;df&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s2"&gt;"train"&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;head&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;&lt;img src="./images/article_10/dataframe.png"/&gt;&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h2 id="Removing-drift"&gt;Removing drift&lt;a class="anchor-link" href="#Removing-drift"&gt;¶&lt;/a&gt;&lt;/h2&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;This is an innovative feature I haven't encountered in other packages. The main idea is to automatically detect and remove variables that have a distribution that is substantially different between the train and the test set.&lt;/p&gt;
+&lt;p&gt;This happens quite a lot and we generally talk about biased data. You could have for example a situation when the  train set has a population of young people whereas the test has elderly only. This indicates that the age feature is not robust and may lead to a poor performance of the model when testing. So it has to be discarded.&lt;/p&gt;
+&lt;p&gt;More information:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;about the algorithm: &lt;a href="https://github.com/AxeldeRomblay/MLBox/blob/master/docs/webinars/features.pdf"&gt;https://github.com/AxeldeRomblay/MLBox/blob/master/docs/webinars/features.pdf&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;about MLBox implementation: &lt;a href="https://mlbox.readthedocs.io/en/latest/features.html#mlbox.preprocessing.Drift_thresholder"&gt;https://mlbox.readthedocs.io/en/latest/features.html#mlbox.preprocessing.Drift_thresholder&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;figure&gt;
+&lt;img src="./images/article_10/drift.png" width="75%"/&gt;
+&lt;figcaption style="text-align:center"&gt;Diagram taken from &lt;a href="https://github.com/AxeldeRomblay/MLBox/blob/master/docs/webinars/features.pdf"&gt;this presentation&lt;/a&gt;&lt;/figcaption&gt;
+&lt;/figure&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h2 id="How-does-MLBox-compute-drifts-for-individual-variables"&gt;How does MLBox compute drifts for individual variables&lt;a class="anchor-link" href="#How-does-MLBox-compute-drifts-for-individual-variables"&gt;¶&lt;/a&gt;&lt;/h2&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;MLBox builds a classifier that separates train from test data. It then uses the ROC score related to this classifier as a measure of the drift.&lt;/p&gt;
+&lt;p&gt;This makes sense:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;If the drift score is high (i.e. the ROC score is high) the ability the discern train data from test data is easy, which means that the two distributions are very different.&lt;/li&gt;
+&lt;li&gt;Otherwise, if the drift score is low (i.e. the ROC score is low) the classifier is not able to separate the two disctributions correctly.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;MLBox provides a class called Drift_thresholder that takes as input the train and test sets as well as the target and computes a drift score of each one of the variables.&lt;/p&gt;
+&lt;p&gt;Drift_thresholder then deletes the variables that have a drift score higher that a threshold (default to 0.6).&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [ ]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class="highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;dft&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Drift_thresholder&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="n"&gt;df&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;dft&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;fit_transform&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;df&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;&lt;img src="./images/article_10/computing_drifts.png"/&gt;&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;As you see here, &lt;code&gt;Name&lt;/code&gt;, &lt;code&gt;PassengerId&lt;/code&gt; and &lt;code&gt;Ticket&lt;/code&gt; get removed beacause of their respective drift scores. If you think about it, this is not surprising at all because these variables, given their nature, can have any random value thus resulting in plausible drift between their train and test distributions.&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h2 id="The-heavy-lifting-:-optimizing"&gt;The heavy lifting : optimizing&lt;a class="anchor-link" href="#The-heavy-lifting-:-optimizing"&gt;¶&lt;/a&gt;&lt;/h2&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;This section performs the optimisation of the pipeline and tries different configurations of the parameters:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;NA encoder (missing values encoder)&lt;/li&gt;
+&lt;li&gt;CA encoder (categorical features encoder)&lt;/li&gt;
+&lt;li&gt;Feature selector (OPTIONAL)&lt;/li&gt;
+&lt;li&gt;Stacking estimator - feature engineer (OPTIONAL)&lt;/li&gt;
+&lt;li&gt;Estimator (classifier or regressor)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;More details here: &lt;a href="https://mlbox.readthedocs.io/en/latest/features.html#mlbox.optimisation.Optimiser"&gt;https://mlbox.readthedocs.io/en/latest/features.html#mlbox.optimisation.Optimiser&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;We first instantiate the Optimiser class:&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [ ]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class="highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;opt&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Optimiser&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;Then we can run it using the default model configuration set as default (LightGBM) without any autoML or complex grid search.&lt;/p&gt;
+&lt;p&gt;This should be the first baseline&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [ ]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class="highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;warnings&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;filterwarnings&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'ignore'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;category&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="ne"&gt;DeprecationWarning&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;score&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;opt&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;evaluate&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kc"&gt;None&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;df&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;&lt;img src="./images/article_10/baseline_optim.png"/&gt;&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;The neg_log_loss = -0.6325 as a first baseline.&lt;/p&gt;
+&lt;p&gt;Let's now define a space of multiple configurations:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;ne__numerical_strategy: how to handle missing data in numerical features&lt;/li&gt;
+&lt;li&gt;ce__strategy: how to handle categorical variables encoding&lt;/li&gt;
+&lt;li&gt;fs: feature selection&lt;/li&gt;
+&lt;li&gt;stck: meta-features stacker&lt;/li&gt;
+&lt;li&gt;est: final estimator&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [ ]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class="highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;space&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="s1"&gt;'ne__numerical_strategy'&lt;/span&gt;&lt;span class="p"&gt;:{&lt;/span&gt;&lt;span class="s2"&gt;"search"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="s2"&gt;"choice"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                                 &lt;span class="s2"&gt;"space"&lt;/span&gt;&lt;span class="p"&gt;:[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s2"&gt;"mean"&lt;/span&gt;&lt;span class="p"&gt;]},&lt;/span&gt;
+        &lt;span class="s1"&gt;'ce__strategy'&lt;/span&gt;&lt;span class="p"&gt;:{&lt;/span&gt;&lt;span class="s2"&gt;"search"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="s2"&gt;"choice"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                        &lt;span class="s2"&gt;"space"&lt;/span&gt;&lt;span class="p"&gt;:[&lt;/span&gt;&lt;span class="s2"&gt;"label_encoding"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s2"&gt;"random_projection"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s2"&gt;"entity_embedding"&lt;/span&gt;&lt;span class="p"&gt;]},&lt;/span&gt; 
+        &lt;span class="s1"&gt;'fs__threshold'&lt;/span&gt;&lt;span class="p"&gt;:{&lt;/span&gt;&lt;span class="s2"&gt;"search"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="s2"&gt;"uniform"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                        &lt;span class="s2"&gt;"space"&lt;/span&gt;&lt;span class="p"&gt;:[&lt;/span&gt;&lt;span class="mf"&gt;0.001&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mf"&gt;0.2&lt;/span&gt;&lt;span class="p"&gt;]},&lt;/span&gt; 
+        &lt;span class="s1"&gt;'est__strategy'&lt;/span&gt;&lt;span class="p"&gt;:{&lt;/span&gt;&lt;span class="s2"&gt;"search"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="s2"&gt;"choice"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; 
+                         &lt;span class="s2"&gt;"space"&lt;/span&gt;&lt;span class="p"&gt;:[&lt;/span&gt;&lt;span class="s2"&gt;"RandomForest"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s2"&gt;"ExtraTrees"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s2"&gt;"LightGBM"&lt;/span&gt;&lt;span class="p"&gt;]},&lt;/span&gt;
+        &lt;span class="s1"&gt;'est__max_depth'&lt;/span&gt;&lt;span class="p"&gt;:{&lt;/span&gt;&lt;span class="s2"&gt;"search"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="s2"&gt;"choice"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; 
+                          &lt;span class="s2"&gt;"space"&lt;/span&gt;&lt;span class="p"&gt;:[&lt;/span&gt;&lt;span class="mi"&gt;8&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;9&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;10&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;11&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;12&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;13&lt;/span&gt;&lt;span class="p"&gt;]}&lt;/span&gt;
+        &lt;span class="p"&gt;}&lt;/span&gt;
+
+&lt;span class="n"&gt;params&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;opt&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;optimise&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;space&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;df&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;15&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;&lt;img src="./images/article_10/optim.png"/&gt;&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;Let's now evaluate this model:&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [ ]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class="highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;opt&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;evaluate&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;params&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;df&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;&lt;img src="images/article_10/evaluation.png"/&gt;&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;Running this pipeline resulted in a higher neg loss, which is better.&lt;/p&gt;
+&lt;p&gt;There's clearly very good potential of more improvement if we define a better space of search or stacking operations and maybe other feature selection techniques.&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h1 id="4---Running-predictions"&gt;4 - Running predictions&lt;a class="anchor-link" href="#4---Running-predictions"&gt;¶&lt;/a&gt;&lt;/h1&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;Now we fit the optimal pipeline and predict on our test dataset.&lt;/p&gt;
+&lt;p&gt;More details here: &lt;a href="https://mlbox.readthedocs.io/en/latest/features.html#mlbox.prediction.Predictor"&gt;https://mlbox.readthedocs.io/en/latest/features.html#mlbox.prediction.Predictor&lt;/a&gt;&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [ ]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class="highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;prd&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Predictor&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="n"&gt;prd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;fit_predict&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;params&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;df&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h1 id="5---Conclusion"&gt;5 - Conclusion&lt;a class="anchor-link" href="#5---Conclusion"&gt;¶&lt;/a&gt;&lt;/h1&gt;&lt;p&gt;Running an automated AutoML pipeline has never been easier. With MLBox, you can do this very quickly and efficiently so that you can focus on what really matters when solving a business problem.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Understanding the problem&lt;/li&gt;
+&lt;li&gt;Acquiring and consolidating the right data&lt;/li&gt;
+&lt;li&gt;Formalizing the performance metrics to reach and compute&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Let's hope these three first steps don't get automated soon :)&lt;/p&gt;
+&lt;p&gt;Hope you liked this library. Don't hesitate to star it on &lt;a href="https://github.com/AxeldeRomblay/MLBox"&gt; github&lt;/a&gt; or report an &lt;a href="https://github.com/AxeldeRomblay/MLBox/issues"&gt;issue&lt;/a&gt; to its contributor.&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+ 
+
+&lt;p&gt;&lt;/p&gt;</content><category term="MLBox"></category></entry></feed>
