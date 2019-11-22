@@ -4,7 +4,8 @@ p {
 }
 
 a, .h1, .h2, .h3, .h4, .h5, h1, h2, h3, h4, h5 {
-    font-family: 'Roboto', sans-serif !important
+    /* font-family: 'Roboto', sans-serif !important */
+    font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif !important
 }
 
 /*pre {
@@ -12,7 +13,9 @@ a, .h1, .h2, .h3, .h4, .h5, h1, h2, h3, h4, h5 {
 }*/
 
 p {
-    font-size: 1.2em
+    font-size: 1.2em;
+    margin-bottom: 9px !important;
+
 }
 
 h2 a: hover, h2 a: visited, h2 a: link, h2 a: active, h2 a: focus {

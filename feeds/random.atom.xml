@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom"><title>Ahmed BESBES - Data Science Portfolio - Random</title><link href="https://ahmedbesbes.com/" rel="alternate"></link><link href="https://ahmedbesbes.com/feeds/random.atom.xml" rel="self"></link><id>https://ahmedbesbes.com/</id><updated>2016-03-05T10:20:00+01:00</updated><subtitle>Data scientist in the making</subtitle><entry><title>Welcome !</title><link href="https://ahmedbesbes.com/welcome.html" rel="alternate"></link><published>2016-03-05T10:20:00+01:00</published><updated>2016-03-05T10:20:00+01:00</updated><author><name>Ahmed Besbes</name></author><id>tag:ahmedbesbes.com,2016-03-05:/welcome.html</id><summary type="html">&lt;/head&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;
 &lt;p style="text-align: center;font-size: 1.2em;"&gt;
-  &lt;img src="../images/hello.jpg"/&gt;
+  &lt;img src="/images/hello.jpg"/&gt;
 &lt;/p&gt;
 
 &lt;p&gt;&lt;br/&gt;&lt;/p&gt;
@@ -12,7 +12,7 @@
 &lt;p&gt;This is also a space where &lt;strong&gt;you&lt;/strong&gt; can collaborate. So if something needs clarification or any further details, or if a mistake needs correction, don't hesitate to point it out: you can either post in the comment section below or submit an issue on github.&lt;/p&gt;
 &lt;p&gt;Hope to see you around.&lt;/p&gt;</summary><content type="html">&lt;/head&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;
 &lt;p style="text-align: center;font-size: 1.2em;"&gt;
-  &lt;img src="../images/hello.jpg"/&gt;
+  &lt;img src="/images/hello.jpg"/&gt;
 &lt;/p&gt;
 
 &lt;p&gt;&lt;br/&gt;&lt;/p&gt;
