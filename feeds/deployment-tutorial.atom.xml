@@ -361,13 +361,13 @@ scrapy crawl trustpilot
 &lt;p&gt;Now that the data is collected, we're ready to train a sentiment classifier to predict the labels we defined earlier.&lt;/p&gt;
 &lt;p&gt;There are a wide range of possible models to use. The one we'll be training is a character based convolutional neural network. It's based on this &lt;a href="https://arxiv.org/pdf/1509.01626.pdf"&gt;paper&lt;/a&gt; and it proved to be really good on text classification tasks such as binary classification of Amazon Reviews datasets.&lt;/p&gt;
 &lt;p&gt;The question you'd be asking up-front though is the following: how would you use CNNs for text classification? Aren't these architectures specifically designed for image data?&lt;/p&gt;
-&lt;p&gt;Well, the truth is, CNN are way more versatile and their application can extend the scope of image classification. In fact, they are also able to capture sequential information that is inherent to text data. The only only trick here is to efficiently represent the input text.&lt;/p&gt;
+&lt;p&gt;Well, the truth is, CNN are way more versatile and their application can extend the scope of image classification. In fact, they are also able to capture sequential information that is inherent to text data. The only trick here is to efficiently represent the input text.&lt;/p&gt;
 &lt;p&gt;To see how this is done, imagine the following tweet:&lt;/p&gt;
 &lt;p align="center"&gt;
     &lt;img src="./images/article_11/tweet.png" style="margin:15px" width="60%"/&gt;
 &lt;/p&gt;
 
-&lt;p&gt;Assuming an alphabet of size 70 containing the english letters and the special characters and an arbitrary maximum length of 140, one possible representation of this sentence is a (70, 140) matrix where each column is a one hot vector indiciating the position of a given character in the alphabet and 140 being the maximum length of tweets. This porcess is called &lt;strong&gt;quantization&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;Assuming an alphabet of size 70 containing the english letters and the special characters and an arbitrary maximum length of 140, one possible representation of this sentence is a (70, 140) matrix where each column is a one hot vector indicating the position of a given character in the alphabet and 140 being the maximum length of tweets. This process is called &lt;strong&gt;quantization&lt;/strong&gt;.&lt;/p&gt;
 &lt;p&gt;Note that if a sentence is too long, the representation truncates up to the first 140 characters. On the other hand, if the sentence is too short 0 column vectors are padded until the (70, 140) shape is reached.&lt;/p&gt;
 &lt;p&gt;So what to do now with this representation?&lt;/p&gt;
 &lt;p align="center"&gt;
@@ -376,7 +376,7 @@ scrapy crawl trustpilot
 
 &lt;p&gt;&lt;strong&gt;Feed it to a CNN for classification, obviously 😁&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;But there's a small trick though. Convolutions are usually performed using 2D-shaped kernels, because these structures capture the 2D spatial information lying in the pixels. 
-Text is however not suited to this type of convolutions beacuse letters follow each other sequentially, in one dimension only, to form a meaning. To capture this 1-dimensional denpendency, we'll use &lt;strong&gt;1D convolutions&lt;/strong&gt;.&lt;/p&gt;
+Text is however not suited to this type of convolutions because letters follow each other sequentially, in one dimension only, to form a meaning. To capture this 1-dimensional dependency, we'll use &lt;strong&gt;1D convolutions&lt;/strong&gt;.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;So how does a 1-D convolution work?&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;Unlike 2D-convolutions that make a 2D kernel slide horizontally and vertically over the pixels, 1D-convolutions use 1D kernels that slide horizontally only over the columns (i.e. the characters) to capture the dependency between characters and their compositions. You could think for example about a 1D kernel of size 3 as a character 3-gram detector that fires when it detects a composition of three sucessive letters that is relevant to the prediction.&lt;/p&gt;
 &lt;p&gt;The diagram below shows the architecture we'll be using: &lt;/p&gt;
@@ -462,7 +462,7 @@ Text is however not suited to this type of convolutions beacuse letters follow e
 &lt;!-- insert my youtube video here --&gt;
 
 &lt;p align="center"&gt;
-    &lt;iframe allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen="" frameborder="0" height="400" src="https://www.youtube.com/embed/CNY8VjJt-iQ" style="margin:15px" width="100%"&gt;&lt;/iframe&gt;
+    &lt;iframe allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen="" frameborder="0" height="400" src="https://www.youtube.com/embed/CNY8VjJt-iQ" style="margin:15px" width="600"&gt;&lt;/iframe&gt;
 &lt;/p&gt;
 
 &lt;p&gt;Character CNN are interesting for various reasons since they have nice properties 💡&lt;/p&gt;
@@ -534,7 +534,7 @@ python train.py --data_path ./data/tp_amazon.csv &lt;span class="se"&gt;\ &lt;/s
 &lt;/ul&gt;
 &lt;p&gt;To learn more about the training arguments and options, please check out the original &lt;a href="https://github.com/ahmedbesbes/character-based-cnn"&gt;repo&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;From now on, we'll use the trained model that is saved as a release &lt;a href="https://github.com/ahmedbesbes/character-based-cnn/releases/download/model_en_tp_amazon/model_tp_amazon_1014.pth"&gt;here&lt;/a&gt;. When running the app for the first time, it'll get downloaded from that link and locally saved (in the container) for the inference.&lt;/p&gt;
-&lt;h2&gt;3 - Building an interactive web app 📲 with Dash, Flask and PostgeSQL&lt;/h2&gt;
+&lt;h2&gt;3 - Building an interactive web app 📲 with Dash, Flask and PostgreSQL&lt;/h2&gt;
 &lt;p&gt;&lt;em&gt;The dash code can be found &lt;a href="https://github.com/MarwanDebbiche/post-tuto-deployment/tree/master/src/dash"&gt;here&lt;/a&gt; and the api code &lt;a href="https://github.com/MarwanDebbiche/post-tuto-deployment/tree/master/src/api"&gt;here&lt;/a&gt;&lt;/em&gt;&lt;/p&gt;
 &lt;p&gt;Now that we have trained the sentiment classifier, let's build our application so that end-users can interact with the model and evaluate new brands.&lt;/p&gt;
 &lt;p&gt;Here is a schema of our app architecture:&lt;/p&gt;
@@ -552,7 +552,7 @@ python train.py --data_path ./data/tp_amazon.csv &lt;span class="se"&gt;\ &lt;/s
 &lt;p&gt;We chose not to for a very simple reason: &lt;strong&gt;it makes the logic and the visualization parts independant&lt;/strong&gt;. Indeed, because we have a separated API, we can with very little effort replace the Dash app with any other frontend technology, or add a mobile or desktop app.&lt;/p&gt;
 &lt;p&gt;Now, let's have a closer look at how those blocks are built. &lt;/p&gt;
 &lt;h3&gt;PostgreSQL Database&lt;/h3&gt;
-&lt;p&gt;Nothnig fancy or original regarding the database part. We chose to use one of the most widely used relational databases: PostgreSQL.&lt;/p&gt;
+&lt;p&gt;Nothing fancy or original regarding the database part. We chose to use one of the most widely used relational databases: PostgreSQL.&lt;/p&gt;
 &lt;p&gt;To run a PostgreSQL database for local development, you can either download PostgreSQL from the &lt;a href="https://www.postgresql.org/download/"&gt;official website&lt;/a&gt; or, more simply, launch a postgres container using &lt;a href="https://hub.docker.com/_/postgres"&gt;Docker&lt;/a&gt;:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;docker pull postgres
 docker run --name postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=password -e POSTGRES_DB=postgres -p 5432:5432 -d postgres
@@ -564,7 +564,7 @@ docker run --name postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=passwo
 - pull a &lt;a href="https://hub.docker.com/_/postgres"&gt;postgres docker image&lt;/a&gt;  from Docker Hub
 - run this image in a container&lt;/p&gt;
 &lt;h3&gt;Flask API&lt;/h3&gt;
-&lt;p&gt;The RESTful API is the most important part of our app. It is responsible for the interractions with both the machine learning model and the database.&lt;/p&gt;
+&lt;p&gt;The RESTful API is the most important part of our app. It is responsible for the interactions with both the machine learning model and the database.&lt;/p&gt;
 &lt;p&gt;Let's have a look at the routes needed for our api:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;Sentiment Classification: &lt;code&gt;POST /api/predict&lt;/code&gt;&lt;/li&gt;
@@ -588,7 +588,7 @@ docker run --name postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=passwo
 
 &lt;p&gt;As you can see, this route gets a text field called &lt;code&gt;review&lt;/code&gt; and returns a sentiment score based on that text.&lt;/p&gt;
 &lt;p&gt;It starts by downloading the trained model from github and saving it to disk. Then it loads it and pass it to GPU or CPU.&lt;/p&gt;
-&lt;p&gt;When the api recieves an input review it passes it to the &lt;code&gt;predict_sentiment&lt;/code&gt; function. This function is responsible of representing the raw text in a matrix format and feeding it to the model.&lt;/p&gt;
+&lt;p&gt;When the api receives an input review it passes it to the &lt;code&gt;predict_sentiment&lt;/code&gt; function. This function is responsible of representing the raw text in a matrix format and feeding it to the model.&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;ml.model&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;CharacterLevelCNN&lt;/span&gt;
 &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;ml.utils&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;predict_sentiment&lt;/span&gt;
 
@@ -1273,7 +1273,7 @@ docker-compose up --build -d
 &lt;/p&gt;
 
 &lt;p&gt;And, here it is, you can finally create your load balancer.&lt;/p&gt;
-&lt;p&gt;You can test it by goint to your-load-balancer-dns-name-amazonaws.com. you should see your app!&lt;/p&gt;
+&lt;p&gt;You can test it by going to your-load-balancer-dns-name-amazonaws.com. you should see your app!&lt;/p&gt;
 &lt;p&gt;BUT, despite the fact that we have used the certificate issued by ACM, it still says that the connection is not secure!&lt;/p&gt;
 &lt;p&gt;Don't worry, that's perfectly fine. If you remember correctly, the certificate we requested protects &lt;code&gt;mycooldomain.com&lt;/code&gt;, not &lt;code&gt;your-load-balancer-dns-name-amazonaws.com&lt;/code&gt;.&lt;/p&gt;
 &lt;p&gt;So we need to create a record set in Route53 to map our domain name to our load balancer. We will see how to do that very soon. But before that, we will need to configure one last thing in our ALB.&lt;/p&gt;
@@ -1293,7 +1293,7 @@ docker-compose up --build -d
     &lt;img src="./images/article_11/route53-configure-a-record.png" width="30%"/&gt;
 &lt;/p&gt;
 
-&lt;p&gt;And you will soon be able to access the app using your custom domain adress (DNS propacation might usually takes about an hour).&lt;/p&gt;
+&lt;p&gt;And you will soon be able to access the app using your custom domain adress (DNS propacation might usually take about an hour).&lt;/p&gt;
 &lt;p&gt;One last thing that you might want to do is to either redirect traffic from &lt;code&gt;yourcooldomain.com&lt;/code&gt; to &lt;code&gt;www.yourcooldomain.com&lt;/code&gt;, or the other way around. We chose to redirect &lt;code&gt;reviews.ai2prod.com&lt;/code&gt; to &lt;a href="http://www.reviews.ai2prod.com"&gt;www.reviews.ai2prod.com&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;We won't go into much details here but here is how to do that:
 - Create a new application load balancer. It will only be in charge of redirecting to your app's main url so you don't need to register any instance in its target group.
@@ -1301,7 +1301,7 @@ docker-compose up --build -d
 - Create a record set in Route53 to map the subdomain you wish to redirect your traffic from, to this new ALB&lt;/p&gt;
 &lt;p&gt;Here is a schema reprensenting how everything works in the end:&lt;/p&gt;
 &lt;p align="center"&gt;
-    &lt;img src="/images/article_11/schema-dns-load-balancer.png" style="margin:15px" width="80%"/&gt;
+    &lt;img src="./images/article_11/schema-dns-load-balancer.png" style="margin:15px" width="80%"/&gt;
 &lt;/p&gt;
 
 &lt;h2&gt;6 - Next steps 🛠&lt;/h2&gt;

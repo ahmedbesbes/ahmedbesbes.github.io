@@ -12244,13 +12244,13 @@ scrapy crawl trustpilot
 <p>Now that the data is collected, we're ready to train a sentiment classifier to predict the labels we defined earlier.</p>
 <p>There are a wide range of possible models to use. The one we'll be training is a character based convolutional neural network. It's based on this <a href="https://arxiv.org/pdf/1509.01626.pdf">paper</a> and it proved to be really good on text classification tasks such as binary classification of Amazon Reviews datasets.</p>
 <p>The question you'd be asking up-front though is the following: how would you use CNNs for text classification? Aren't these architectures specifically designed for image data?</p>
-<p>Well, the truth is, CNN are way more versatile and their application can extend the scope of image classification. In fact, they are also able to capture sequential information that is inherent to text data. The only only trick here is to efficiently represent the input text.</p>
+<p>Well, the truth is, CNN are way more versatile and their application can extend the scope of image classification. In fact, they are also able to capture sequential information that is inherent to text data. The only trick here is to efficiently represent the input text.</p>
 <p>To see how this is done, imagine the following tweet:</p>
 <p align="center">
     <img src="./images/article_11/tweet.png" style="margin:15px" width="60%"/>
 </p>
 
-<p>Assuming an alphabet of size 70 containing the english letters and the special characters and an arbitrary maximum length of 140, one possible representation of this sentence is a (70, 140) matrix where each column is a one hot vector indiciating the position of a given character in the alphabet and 140 being the maximum length of tweets. This porcess is called <strong>quantization</strong>.</p>
+<p>Assuming an alphabet of size 70 containing the english letters and the special characters and an arbitrary maximum length of 140, one possible representation of this sentence is a (70, 140) matrix where each column is a one hot vector indicating the position of a given character in the alphabet and 140 being the maximum length of tweets. This process is called <strong>quantization</strong>.</p>
 <p>Note that if a sentence is too long, the representation truncates up to the first 140 characters. On the other hand, if the sentence is too short 0 column vectors are padded until the (70, 140) shape is reached.</p>
 <p>So what to do now with this representation?</p>
 <p align="center">
@@ -12259,7 +12259,7 @@ scrapy crawl trustpilot
 
 <p><strong>Feed it to a CNN for classification, obviously 😁</strong></p>
 <p>But there's a small trick though. Convolutions are usually performed using 2D-shaped kernels, because these structures capture the 2D spatial information lying in the pixels. 
-Text is however not suited to this type of convolutions beacuse letters follow each other sequentially, in one dimension only, to form a meaning. To capture this 1-dimensional denpendency, we'll use <strong>1D convolutions</strong>.</p>
+Text is however not suited to this type of convolutions because letters follow each other sequentially, in one dimension only, to form a meaning. To capture this 1-dimensional dependency, we'll use <strong>1D convolutions</strong>.</p>
 <p><strong>So how does a 1-D convolution work?</strong></p>
 <p>Unlike 2D-convolutions that make a 2D kernel slide horizontally and vertically over the pixels, 1D-convolutions use 1D kernels that slide horizontally only over the columns (i.e. the characters) to capture the dependency between characters and their compositions. You could think for example about a 1D kernel of size 3 as a character 3-gram detector that fires when it detects a composition of three sucessive letters that is relevant to the prediction.</p>
 <p>The diagram below shows the architecture we'll be using: </p>
@@ -12345,7 +12345,7 @@ Text is however not suited to this type of convolutions beacuse letters follow e
 <!-- insert my youtube video here -->
 
 <p align="center">
-    <iframe allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen="" frameborder="0" height="400" src="https://www.youtube.com/embed/CNY8VjJt-iQ" style="margin:15px" width="100%"></iframe>
+    <iframe allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen="" frameborder="0" height="400" src="https://www.youtube.com/embed/CNY8VjJt-iQ" style="margin:15px" width="600"></iframe>
 </p>
 
 <p>Character CNN are interesting for various reasons since they have nice properties 💡</p>
@@ -12417,7 +12417,7 @@ python train.py --data_path ./data/tp_amazon.csv <span class="se">\ </span>
 </ul>
 <p>To learn more about the training arguments and options, please check out the original <a href="https://github.com/ahmedbesbes/character-based-cnn">repo</a>.</p>
 <p>From now on, we'll use the trained model that is saved as a release <a href="https://github.com/ahmedbesbes/character-based-cnn/releases/download/model_en_tp_amazon/model_tp_amazon_1014.pth">here</a>. When running the app for the first time, it'll get downloaded from that link and locally saved (in the container) for the inference.</p>
-<h2>3 - Building an interactive web app 📲 with Dash, Flask and PostgeSQL</h2>
+<h2>3 - Building an interactive web app 📲 with Dash, Flask and PostgreSQL</h2>
 <p><em>The dash code can be found <a href="https://github.com/MarwanDebbiche/post-tuto-deployment/tree/master/src/dash">here</a> and the api code <a href="https://github.com/MarwanDebbiche/post-tuto-deployment/tree/master/src/api">here</a></em></p>
 <p>Now that we have trained the sentiment classifier, let's build our application so that end-users can interact with the model and evaluate new brands.</p>
 <p>Here is a schema of our app architecture:</p>
@@ -12435,7 +12435,7 @@ python train.py --data_path ./data/tp_amazon.csv <span class="se">\ </span>
 <p>We chose not to for a very simple reason: <strong>it makes the logic and the visualization parts independant</strong>. Indeed, because we have a separated API, we can with very little effort replace the Dash app with any other frontend technology, or add a mobile or desktop app.</p>
 <p>Now, let's have a closer look at how those blocks are built. </p>
 <h3>PostgreSQL Database</h3>
-<p>Nothnig fancy or original regarding the database part. We chose to use one of the most widely used relational databases: PostgreSQL.</p>
+<p>Nothing fancy or original regarding the database part. We chose to use one of the most widely used relational databases: PostgreSQL.</p>
 <p>To run a PostgreSQL database for local development, you can either download PostgreSQL from the <a href="https://www.postgresql.org/download/">official website</a> or, more simply, launch a postgres container using <a href="https://hub.docker.com/_/postgres">Docker</a>:</p>
 <div class="highlight"><pre><span></span>docker pull postgres
 docker run --name postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=password -e POSTGRES_DB=postgres -p 5432:5432 -d postgres
@@ -12447,7 +12447,7 @@ docker run --name postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=passwo
 - pull a <a href="https://hub.docker.com/_/postgres">postgres docker image</a>  from Docker Hub
 - run this image in a container</p>
 <h3>Flask API</h3>
-<p>The RESTful API is the most important part of our app. It is responsible for the interractions with both the machine learning model and the database.</p>
+<p>The RESTful API is the most important part of our app. It is responsible for the interactions with both the machine learning model and the database.</p>
 <p>Let's have a look at the routes needed for our api:</p>
 <ul>
 <li>Sentiment Classification: <code>POST /api/predict</code></li>
@@ -12471,7 +12471,7 @@ docker run --name postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=passwo
 
 <p>As you can see, this route gets a text field called <code>review</code> and returns a sentiment score based on that text.</p>
 <p>It starts by downloading the trained model from github and saving it to disk. Then it loads it and pass it to GPU or CPU.</p>
-<p>When the api recieves an input review it passes it to the <code>predict_sentiment</code> function. This function is responsible of representing the raw text in a matrix format and feeding it to the model.</p>
+<p>When the api receives an input review it passes it to the <code>predict_sentiment</code> function. This function is responsible of representing the raw text in a matrix format and feeding it to the model.</p>
 <div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ml.model</span> <span class="kn">import</span> <span class="n">CharacterLevelCNN</span>
 <span class="kn">from</span> <span class="nn">ml.utils</span> <span class="kn">import</span> <span class="n">predict_sentiment</span>
 
@@ -13156,7 +13156,7 @@ docker-compose up --build -d
 </p>
 
 <p>And, here it is, you can finally create your load balancer.</p>
-<p>You can test it by goint to your-load-balancer-dns-name-amazonaws.com. you should see your app!</p>
+<p>You can test it by going to your-load-balancer-dns-name-amazonaws.com. you should see your app!</p>
 <p>BUT, despite the fact that we have used the certificate issued by ACM, it still says that the connection is not secure!</p>
 <p>Don't worry, that's perfectly fine. If you remember correctly, the certificate we requested protects <code>mycooldomain.com</code>, not <code>your-load-balancer-dns-name-amazonaws.com</code>.</p>
 <p>So we need to create a record set in Route53 to map our domain name to our load balancer. We will see how to do that very soon. But before that, we will need to configure one last thing in our ALB.</p>
@@ -13176,7 +13176,7 @@ docker-compose up --build -d
     <img src="./images/article_11/route53-configure-a-record.png" width="30%"/>
 </p>
 
-<p>And you will soon be able to access the app using your custom domain adress (DNS propacation might usually takes about an hour).</p>
+<p>And you will soon be able to access the app using your custom domain adress (DNS propacation might usually take about an hour).</p>
 <p>One last thing that you might want to do is to either redirect traffic from <code>yourcooldomain.com</code> to <code>www.yourcooldomain.com</code>, or the other way around. We chose to redirect <code>reviews.ai2prod.com</code> to <a href="http://www.reviews.ai2prod.com">www.reviews.ai2prod.com</a></p>
 <p>We won't go into much details here but here is how to do that:
 - Create a new application load balancer. It will only be in charge of redirecting to your app's main url so you don't need to register any instance in its target group.
@@ -13184,7 +13184,7 @@ docker-compose up --build -d
 - Create a record set in Route53 to map the subdomain you wish to redirect your traffic from, to this new ALB</p>
 <p>Here is a schema reprensenting how everything works in the end:</p>
 <p align="center">
-    <img src="/images/article_11/schema-dns-load-balancer.png" style="margin:15px" width="80%"/>
+    <img src="./images/article_11/schema-dns-load-balancer.png" style="margin:15px" width="80%"/>
 </p>
 
 <h2>6 - Next steps 🛠</h2>
