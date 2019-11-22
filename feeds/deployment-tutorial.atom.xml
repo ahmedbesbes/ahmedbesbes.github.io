@@ -1276,8 +1276,28 @@ docker-compose up --build -d
 &lt;p&gt;You can test it by going to your-load-balancer-dns-name-amazonaws.com. you should see your app!&lt;/p&gt;
 &lt;p&gt;BUT, despite the fact that we have used the certificate issued by ACM, it still says that the connection is not secure!&lt;/p&gt;
 &lt;p&gt;Don't worry, that's perfectly fine. If you remember correctly, the certificate we requested protects &lt;code&gt;mycooldomain.com&lt;/code&gt;, not &lt;code&gt;your-load-balancer-dns-name-amazonaws.com&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;So we need to create a record set in Route53 to map our domain name to our load balancer. We will see how to do that very soon. But before that, we will need to configure one last thing in our ALB.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;TBC with HTTP rule : redirection to HTTPS&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;So we need to create a record set in Route53 to map our domain name to our load balancer. We will see how to do that very soon.&lt;/p&gt;
+&lt;p&gt;But before that, we will already put in place a redirection from HTTP to HTTPS in our load balancer. This will ensure that all the traffic is secured when we will finally use our domain.&lt;/p&gt;
+&lt;p&gt;To do that, you need to edit the HTTP rule of your Application Load Balancer:&lt;/p&gt;
+&lt;p align="center"&gt;
+    &lt;img src="./images/article_11/screenshot-load-balancer-view-rules.png" style="margin:15px" width="100%"/&gt;
+&lt;/p&gt;
+
+&lt;p&gt;Click on the pen symbols:&lt;/p&gt;
+&lt;p align="center"&gt;
+    &lt;img src="./images/article_11/screenshot-load-balancer-edit-rule.png" style="margin:15px" width="80%"/&gt;
+&lt;/p&gt;
+
+&lt;p&gt;Delete the previous action (&lt;code&gt;Forward to&lt;/code&gt;) and then add a new &lt;code&gt;Redirect to&lt;/code&gt; action:
+&lt;/p&gt;&lt;p align="center"&gt;
+    &lt;img src="./images/article_11/screenshot-load-balancer-delete-old-rule.png" style="margin:15px" width="80%"/&gt;
+&lt;/p&gt;&lt;p&gt;&lt;/p&gt;
+&lt;p&gt;Finally, select the HTTPS protocol with port 443, and update your rule.&lt;/p&gt;
+&lt;p align="center"&gt;
+    &lt;img src="./images/article_11/screenshot-load-balancer-add-new-rule.png" style="margin:15px" width="80%"/&gt;
+&lt;/p&gt;
+
+&lt;p&gt;You should now be automatically redirected to https://your-load-balancer-dns-name-amazonaws.com when accessing http://your-load-balancer-dns-name-amazonaws.com&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Create a record set in Route53&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;A Route53 record set is basically a mapping between a domain (or subdomain) and either an IP adress or an AWS asset. In our case, our Application Load Balancer. This record will then be propagated in the &lt;a href="https://en.wikipedia.org/wiki/Domain_Name_System"&gt;Domain Name System&lt;/a&gt;, so that a user can access our app by typing the URL.&lt;/p&gt;
 &lt;p&gt;To create a record set go to your hosted zone's page in Route53 and click on the &lt;code&gt;Create Record Set&lt;/code&gt; button:&lt;/p&gt;
