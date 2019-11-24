@@ -1,16 +1,17 @@
 p {
-    font-family: 'Roboto', sans-serif !important;
+    /* font-family: 'Roboto', sans-serif !important; */
+    font-family: Roboto,Helvetica,sans-serif !important;
     font-size: 16px !important
 }
 
 a, .h1, .h2, .h3, .h4, .h5, h1, h2, h3, h4, h5 {
-    /* font-family: 'Roboto', sans-serif !important */
+    /* font-family: 'Merriweather','Georgia',serif !important */
     font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif !important
 }
 
-/*pre {
-    white-space: pre !important
-}*/
+pre {
+    overflow: auto !important;
+}
 
 p {
     font-size: 1.2em;
